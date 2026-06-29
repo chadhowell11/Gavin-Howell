@@ -20,9 +20,13 @@ jobs:
         run: curl https://rclone.org/install.sh | sudo bash
 
       - name: Write rclone config
+        # Pass the secret via env (not direct ${{ }} interpolation) so the
+        # double-quotes inside the Dropbox token JSON are preserved verbatim.
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
         run: |
           mkdir -p ~/.config/rclone
-          printf '%s' "${{ secrets.RCLONE_CONF }}" > ~/.config/rclone/rclone.conf
+          printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
 
       - name: Sync Dropbox -> R2
         # `copy` is additive (never deletes). Switch to `sync` for a true mirror

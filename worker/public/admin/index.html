@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Gavin Howell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Hanken+Grotesque:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0E11;--petrol:#0E3942;--petrol-deep:#0A272E;--teal-mid:#1B6B7A;
+    --stage:#45D6C9;--mist:#9DB4B9;--line:rgba(255,255,255,.12);--line-strong:rgba(255,255,255,.22);
+    --maxw:1080px;--pad:clamp(18px,4vw,48px);
+    --disp:"Big Shoulders Display",sans-serif;--body:"Hanken Grotesque",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);background:var(--ink);color:#E8EDEE;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--stage);text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font-family:inherit;cursor:pointer}
+  ::selection{background:var(--stage);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--stage);outline-offset:2px;border-radius:3px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--pad)}
+
+  header.nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:12px var(--pad);background:rgba(9,12,14,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .brand{font-family:var(--disp);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:1.1rem}
+  .brand .mono{color:var(--stage)}
+  .who{font-size:.8rem;color:var(--mist);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .who b{color:#fff}
+  .role{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);background:var(--stage);border-radius:4px;padding:.25em .6em;font-weight:700}
+
+  .btn{font-weight:600;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;padding:.6em 1.1em;border-radius:999px;
+    border:1px solid var(--stage);color:var(--stage);background:transparent;transition:.18s;display:inline-flex;align-items:center;gap:.5em;white-space:nowrap}
+  .btn:hover{background:var(--stage);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.solid{background:var(--stage);color:var(--ink)}
+  .btn.ghost{border-color:var(--line-strong);color:#E8EDEE}
+  .btn.ghost:hover{border-color:#fff;background:rgba(255,255,255,.06)}
+  .btn.sm{padding:.4em .8em;font-size:.72rem}
+  .btn.danger{border-color:#e06a6a;color:#e06a6a}
+  .btn.danger:hover{background:#e06a6a;color:#0b0e11}
+
+  main{padding-block:clamp(24px,5vw,52px) 80px}
+  h1{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(1.8rem,5vw,2.8rem);line-height:1;letter-spacing:.01em;margin-bottom:.2em}
+  h2{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:1.3rem;letter-spacing:.03em;margin:0 0 .2em}
+  .sub{color:var(--mist);font-size:.92rem;margin-bottom:1.6em}
+  .crumbs{font-size:.8rem;color:var(--mist);margin-bottom:1em;display:flex;gap:.5em;flex-wrap:wrap;align-items:center}
+  .crumbs a{text-transform:uppercase;letter-spacing:.04em}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:1.4em}
+  .card{display:block;border:1px solid var(--line);border-radius:12px;padding:22px;background:var(--petrol-deep);transition:.2s}
+  .card:hover{border-color:var(--stage);transform:translateY(-2px)}
+  .card h3{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:1.2rem;color:#fff;margin-bottom:.3em}
+  .card p{color:var(--mist);font-size:.85rem}
+
+  .panel{border:1px solid var(--line);border-radius:12px;padding:clamp(18px,3vw,28px);background:var(--petrol-deep);margin-bottom:20px}
+  .panel > h2{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .field{margin-bottom:14px}
+  .field > label{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist);margin-bottom:.5em}
+  input,textarea,select{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line-strong);border-radius:8px;
+    padding:.7em .9em;color:#fff;font-family:var(--body);font-size:.95rem}
+  input:focus,textarea:focus,select:focus{border-color:var(--stage);outline:none}
+  textarea{min-height:84px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row > *{flex:1;min-width:120px}
+  .row.tight > *{flex:0 0 auto;min-width:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+
+  .listrow{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:rgba(0,0,0,.15)}
+  .listrow .grip{cursor:grab;color:var(--mist);user-select:none;padding-top:6px}
+  .listrow .body{flex:1}
+  .listrow .ctrls{display:flex;flex-direction:column;gap:6px}
+  .iconbtn{background:none;border:1px solid var(--line-strong);color:var(--mist);border-radius:6px;width:30px;height:30px;display:grid;place-items:center}
+  .iconbtn:hover{border-color:var(--stage);color:var(--stage)}
+
+  table{width:100%;border-collapse:collapse;margin-top:1em}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:.88rem;vertical-align:middle}
+  th{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+  .pill{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:.25em .7em;border:1px solid var(--line-strong);color:var(--mist)}
+  .pill.active{border-color:var(--stage);color:var(--stage)}
+
+  .slot{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  @media(max-width:560px){.slot{grid-template-columns:1fr}}
+  .slot .preview{aspect-ratio:16/11;background:#0d3038;border-radius:8px;overflow:hidden;display:grid;place-items:center;color:var(--mist)}
+  .slot .preview img{width:100%;height:100%;object-fit:cover}
+
+  .thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;background:#0d3038;flex:0 0 auto}
+  .muted{color:var(--mist);font-size:.85rem}
+  .hide-flag{opacity:.5}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:1.4em 0}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+    background:#0d1418;border:1px solid var(--line-strong);border-radius:10px;padding:.8em 1.2em;font-size:.9rem;z-index:200;transition:.25s;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.ok{border-color:var(--stage)} .toast.err{border-color:#e06a6a;color:#ffd9d9}
+
+  .state{padding:60px 0;text-align:center;color:var(--mist)}
+  .state h1{margin-bottom:.3em}
+  .center{min-height:70vh;display:grid;place-items:center;text-align:center}
+  .spin{width:34px;height:34px;border:3px solid var(--line-strong);border-top-color:var(--stage);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 14px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="brand">Gavin Howell <span class="mono">/ Admin</span></div>
+  <div class="who" id="who"></div>
+</header>
+<main class="wrap" id="view">
+  <div class="center"><div><div class="spin"></div>Loading…</div></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const view = $("view");
+let ME = null;       // { email, name, role }
+let CONTENT = null;  // content.json
+let LINKS = null;    // links.json
+let dirty = false;
+const setDirty = (v) => { dirty = v; };
+
+/* ---------------- api ---------------- */
+async function api(method, path, body){
+  const opts = { method, headers: {} , credentials: "same-origin" };
+  if (body !== undefined){ opts.headers["Content-Type"]="application/json"; opts.body=JSON.stringify(body); }
+  const res = await fetch(path, opts);
+  let data=null; try{ data = await res.json(); }catch(_){}
+  if(!res.ok){ const e=new Error((data&&data.error)||("HTTP "+res.status)); e.status=res.status; throw e; }
+  return data;
+}
+const get = (p)=>api("GET",p);
+const put = (p,b)=>api("PUT",p,b);
+const post = (p,b)=>api("POST",p,b);
+
+function toast(msg, kind){
+  const t=$("toast"); t.textContent=msg; t.className="toast show "+(kind||"ok");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>{ t.className="toast "+(kind||"ok"); }, 2600);
+}
+
+/* ---------------- dom helpers ---------------- */
+function el(tag, attrs, kids){
+  const n=document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k==="class") n.className=attrs[k];
+    else if(k==="html") n.innerHTML=attrs[k];
+    else if(k.slice(0,2)==="on") n.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+    else if(attrs[k]!=null) n.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(c=>{ if(c!=null) n.appendChild(typeof c==="string"?document.createTextNode(c):c); });
+  return n;
+}
+function field(label, control){ return el("div",{class:"field"},[el("label",null,[label]), control]); }
+function input(value, attrs){ const i=el("input",attrs||{}); i.value=value==null?"":value; i.addEventListener("input",()=>setDirty(true)); return i; }
+function textarea(value){ const t=el("textarea"); t.value=value==null?"":value; t.addEventListener("input",()=>setDirty(true)); return t; }
+
+/* ---------------- routing ---------------- */
+function go(hash){
+  if(dirty && !confirm("You have unsaved changes. Leave this screen?")) return;
+  setDirty(false);
+  location.hash = hash;
+}
+window.addEventListener("hashchange", route);
+window.addEventListener("beforeunload", (e)=>{ if(dirty){ e.preventDefault(); e.returnValue=""; } });
+
+function route(){
+  const h = (location.hash||"#/").replace(/^#/,"");
+  if(h==="/"||h==="") return screenDashboard();
+  if(h==="/content") return screenContent();
+  if(h==="/links") return screenLinks();
+  if(h==="/images") return screenImages();
+  if(h==="/members") return screenMembers();
+  if(h.indexOf("/gallery")===0){ const p=decodeURIComponent(h.replace(/^\/gallery\/?/,"")); return screenGallery(p); }
+  screenDashboard();
+}
+
+/* ---------------- boot ---------------- */
+(async function boot(){
+  try{ ME = await get("/admin/me"); }
+  catch(e){
+    if(e.status===401) return renderState("Sign in required","You're not signed in. Cloudflare Access protects this page — reload to sign in.", true);
+    if(e.status===403) return renderState("No access","Your account isn't on the member list for this site. Ask an owner to invite you.");
+    return renderState("Something went wrong", String(e.message));
+  }
+  $("who").innerHTML="";
+  $("who").appendChild(el("span",null,[ el("b",null,[ME.name||ME.email]) ]));
+  $("who").appendChild(el("span",{class:"role"},[ME.role]));
+  const out=el("button",{class:"btn ghost sm",onClick:()=>{ location.href="/cdn-cgi/access/logout"; }},["Sign out"]);
+  $("who").appendChild(out);
+  route();
+})();
+
+function renderState(title, msg, reload){
+  view.innerHTML="";
+  const box=el("div",{class:"center"},[ el("div",null,[ el("h1",null,[title]), el("p",{class:"sub"},[msg]),
+    reload?el("button",{class:"btn solid",onClick:()=>location.reload()},["Reload"]):null ]) ]);
+  view.appendChild(box);
+}
+
+/* ---------------- dashboard ---------------- */
+function screenDashboard(){
+  view.innerHTML="";
+  const cards=el("div",{class:"cards"});
+  const card=(href,h3,p)=> el("a",{class:"card",href:href},[el("h3",null,[h3]),el("p",null,[p])]);
+  cards.appendChild(card("#/content","Site content","Hero, about, disciplines, journey, stats, contact, reel."));
+  cards.appendChild(card("#/links","Links & downloads","Social links, comp card, résumé."));
+  cards.appendChild(card("#/images","Site images","Swap hero & portrait photos from your _Site Dropbox folder."));
+  cards.appendChild(card("#/gallery","Manage gallery","Edit album titles, captions, order, cover, hide items, embeds."));
+  if(ME.role==="owner") cards.appendChild(card("#/members","Members","Invite people and manage roles."));
+  cards.appendChild(el("a",{class:"card",href:"https://www.breakthestageboy.com",target:"_blank",rel:"noopener"},[el("h3",null,["View live site ↗"]),el("p",null,["Open the public website in a new tab."])]));
+  view.appendChild(el("div",null,[ el("h1",null,["Dashboard"]), el("p",{class:"sub"},["Welcome, "+(ME.name||ME.email)+". Pick something to edit."]), cards ]));
+}
+
+/* ---------------- repeatable list editor ---------------- */
+function repeatable(items, makeRow, makeEmpty){
+  const wrap=el("div");
+  const container=el("div");
+  function redraw(){
+    container.innerHTML="";
+    items.forEach((it,i)=>{
+      const body=makeRow(it,i);
+      const ctrls=el("div",{class:"ctrls"},[
+        el("button",{class:"iconbtn",title:"Move up",onClick:()=>{ if(i>0){ items.splice(i-1,0,items.splice(i,1)[0]); setDirty(true); redraw(); } }},["↑"]),
+        el("button",{class:"iconbtn",title:"Move down",onClick:()=>{ if(i<items.length-1){ items.splice(i+1,0,items.splice(i,1)[0]); setDirty(true); redraw(); } }},["↓"]),
+        el("button",{class:"iconbtn",title:"Remove",onClick:()=>{ items.splice(i,1); setDirty(true); redraw(); }},["✕"]),
+      ]);
+      const row=el("div",{class:"listrow",draggable:"true"},[ el("div",{class:"grip"},["⠿"]), el("div",{class:"body"},[body]), ctrls ]);
+      row.addEventListener("dragstart",e=>{ e.dataTransfer.setData("text/plain", i); });
+      row.addEventListener("dragover",e=>e.preventDefault());
+      row.addEventListener("drop",e=>{ e.preventDefault(); const from=+e.dataTransfer.getData("text/plain"); if(from!==i){ items.splice(i,0,items.splice(from,1)[0]); setDirty(true); redraw(); } });
+      container.appendChild(row);
+    });
+  }
+  redraw();
+  const add=el("button",{class:"btn ghost sm",onClick:()=>{ items.push(makeEmpty()); setDirty(true); redraw(); }},["+ Add"]);
+  wrap.appendChild(container); wrap.appendChild(add);
+  return wrap;
+}
+
+/* ---------------- site content ---------------- */
+async function screenContent(){
+  view.innerHTML=""; view.appendChild(el("div",{class:"center"},[el("div",{class:"spin"})]));
+  try{ CONTENT = await get("/admin/content") || {}; }
+  catch(e){ return toast("Couldn't load content: "+e.message,"err"); }
+  const c = CONTENT; c.hero=c.hero||{}; c.about=c.about||{}; c.about.paragraphs=c.about.paragraphs||[];
+  c.about.quickFacts=c.about.quickFacts||[]; c.disciplines=c.disciplines||[]; c.journey=c.journey||[];
+  c.stats=c.stats||{}; c.contact=c.contact||{}; c.reel=c.reel||{}; c.hero.tags=c.hero.tags||[];
+
+  view.innerHTML="";
+  view.appendChild(el("div",{class:"crumbs"},[ el("a",{href:"#/",onClick:e=>{e.preventDefault();go("#/");}},["Dashboard"]), el("span",null,["/"]), el("span",null,["Site content"]) ]));
+  view.appendChild(el("h1",null,["Site content"]));
+  view.appendChild(el("p",{class:"sub"},["Edits save to the site and go live within seconds. Leave a field as-is to keep the current website text."]));
+
+  // Hero
+  const heroEyebrow=input(c.hero.eyebrow), heroTag=input(c.hero.tagline), heroIntro=textarea(c.hero.intro);
+  const tagsInput=input((c.hero.tags||[]).join(", "));
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Hero"]),
+    field("Eyebrow (small line above the name)",heroEyebrow),
+    field("Tagline",heroTag),
+    field("Intro paragraph",heroIntro),
+    field("Tags (comma-separated)",tagsInput),
+  ]));
+
+  // About
+  const aboutLede=textarea(c.about.lede);
+  const paras=c.about.paragraphs.slice();
+  const parasEditor=repeatable(paras,(it,i)=>{ const t=textarea(it); t.addEventListener("input",()=>{paras[i]=t.value;}); return t; }, ()=>"");
+  const qfacts=c.about.quickFacts.map(x=>({value:x.value,label:x.label}));
+  const qfEditor=repeatable(qfacts,(it)=>{ const v=input(it.value),l=input(it.label);
+    v.addEventListener("input",()=>it.value=v.value); l.addEventListener("input",()=>it.label=l.value);
+    return el("div",{class:"row tight"},[el("div",{style:"width:120px"},[v]),el("div",{style:"flex:1"},[l])]); }, ()=>({value:"",label:""}));
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["About"]),
+    field("Lede (intro sentence)",aboutLede),
+    field("Paragraphs",parasEditor),
+    field("Quick facts (value + label)",qfEditor),
+  ]));
+
+  // Disciplines
+  const disc=c.disciplines.map(x=>({name:x.name,blurb:x.blurb}));
+  const discEditor=repeatable(disc,(it)=>{ const n=input(it.name),b=textarea(it.blurb);
+    n.addEventListener("input",()=>it.name=n.value); b.addEventListener("input",()=>it.blurb=b.value);
+    return el("div",null,[field("Name",n),field("Blurb",b)]); }, ()=>({name:"",blurb:""}));
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Disciplines"]), discEditor ]));
+
+  // Journey
+  const jour=c.journey.map(x=>({year:x.year,title:x.title,body:x.body}));
+  const jourEditor=repeatable(jour,(it)=>{ const y=input(it.year),t=input(it.title),b=textarea(it.body);
+    y.addEventListener("input",()=>it.year=y.value); t.addEventListener("input",()=>it.title=t.value); b.addEventListener("input",()=>it.body=b.value);
+    return el("div",null,[el("div",{class:"grid2"},[field("Year",y),field("Title",t)]),field("Body",b)]); }, ()=>({year:"",title:"",body:""}));
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Journey timeline"]), jourEditor ]));
+
+  // Stats
+  const statKeys=[["height","Height"],["weight","Weight"],["hair","Hair"],["eyes","Eyes"],["shoe","Shoe"],["size","Jacket / Size"],["chest","Chest"],["waist","Waist"],["inseam","Inseam"]];
+  const statInputs={};
+  const statGrid=el("div",{class:"grid2"});
+  statKeys.forEach(([k,lbl])=>{ const i=input(c.stats[k]); statInputs[k]=i; statGrid.appendChild(field(lbl,i)); });
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Dancer profile (stats)"]), statGrid ]));
+
+  // Contact + reel
+  const cEmail=input(c.contact.email), cLoc=input(c.contact.location);
+  const rProv=el("select"); ["youtube","vimeo"].forEach(p=>{const o=el("option",{value:p},[p]);if(c.reel.provider===p)o.selected=true;rProv.appendChild(o);}); rProv.addEventListener("change",()=>setDirty(true));
+  const rId=input(c.reel.id);
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Contact & reel"]),
+    el("div",{class:"grid2"},[field("Email",cEmail),field("Based in",cLoc)]),
+    el("div",{class:"grid2"},[field("Reel provider",rProv),field("Reel video ID",rId)]),
+  ]));
+
+  const saveBtn=el("button",{class:"btn solid",onClick:save},["Save all content"]);
+  view.appendChild(el("div",{class:"toolbar"},[saveBtn]));
+
+  async function save(){
+    saveBtn.disabled=true; saveBtn.textContent="Saving…";
+    const out=Object.assign({},CONTENT);
+    out.hero={ eyebrow:heroEyebrow.value, tagline:heroTag.value, intro:heroIntro.value,
+      tags: tagsInput.value.split(",").map(s=>s.trim()).filter(Boolean) };
+    out.about={ lede:aboutLede.value, paragraphs:paras.filter(p=>p.trim()!==""), quickFacts:qfacts.filter(q=>q.value||q.label) };
+    out.disciplines=disc.filter(d=>d.name);
+    out.journey=jour.filter(j=>j.year||j.title||j.body);
+    out.stats={}; statKeys.forEach(([k])=>{ if(statInputs[k].value!=="") out.stats[k]=statInputs[k].value; });
+    out.contact={ email:cEmail.value, location:cLoc.value };
+    out.reel={ provider:rProv.value, id:rId.value };
+    out.images = CONTENT.images || {};
+    try{ await put("/admin/content", out); CONTENT=out; setDirty(false); toast("Saved — live within seconds."); }
+    catch(e){ toast("Save failed: "+e.message,"err"); }
+    finally{ saveBtn.disabled=false; saveBtn.textContent="Save all content"; }
+  }
+}
+
+/* ---------------- links ---------------- */
+async function screenLinks(){
+  view.innerHTML=""; view.appendChild(el("div",{class:"center"},[el("div",{class:"spin"})]));
+  try{ LINKS = await get("/admin/links") || {}; }catch(e){ return toast("Couldn't load links: "+e.message,"err"); }
+  LINKS.links=LINKS.links||[]; LINKS.downloads=LINKS.downloads||[];
+  const links=LINKS.links.map(x=>Object.assign({},x)), dls=LINKS.downloads.map(x=>Object.assign({},x));
+  view.innerHTML="";
+  view.appendChild(el("div",{class:"crumbs"},[ el("a",{href:"#/",onClick:e=>{e.preventDefault();go("#/");}},["Dashboard"]), el("span",null,["/"]), el("span",null,["Links"]) ]));
+  view.appendChild(el("h1",null,["Links & downloads"]));
+
+  const linksEditor=repeatable(links,(it)=>{ const lbl=input(it.label),u=input(it.url);
+    const show=el("input",{type:"checkbox"}); show.checked=it.show!==false; show.addEventListener("change",()=>{it.show=show.checked;setDirty(true);});
+    lbl.addEventListener("input",()=>it.label=lbl.value); u.addEventListener("input",()=>it.url=u.value);
+    return el("div",null,[el("div",{class:"grid2"},[field("Label",lbl),field("URL",u)]), el("label",{class:"muted"},[show," Show on site"])]); },
+    ()=>({id:"",label:"",url:"",show:true}));
+  view.appendChild(el("div",{class:"panel"},[el("h2",null,["Social / external links"]),linksEditor]));
+
+  const dlEditor=repeatable(dls,(it)=>{ const lbl=input(it.label),u=input(it.url);
+    lbl.addEventListener("input",()=>it.label=lbl.value); u.addEventListener("input",()=>it.url=u.value);
+    return el("div",{class:"grid2"},[field("Label",lbl),field("URL",u)]); }, ()=>({id:"",label:"",url:""}));
+  view.appendChild(el("div",{class:"panel"},[el("h2",null,["Downloads (comp card, résumé)"]),dlEditor]));
+
+  const saveBtn=el("button",{class:"btn solid",onClick:save},["Save links"]);
+  view.appendChild(el("div",{class:"toolbar"},[saveBtn]));
+  async function save(){ saveBtn.disabled=true; saveBtn.textContent="Saving…";
+    try{ await put("/admin/links",{links:links,downloads:dls}); setDirty(false); toast("Saved."); }
+    catch(e){ toast("Save failed: "+e.message,"err"); } finally{ saveBtn.disabled=false; saveBtn.textContent="Save links"; } }
+}
+
+/* ---------------- site images ---------------- */
+async function screenImages(){
+  view.innerHTML=""; view.appendChild(el("div",{class:"center"},[el("div",{class:"spin"})]));
+  let files=[];
+  try{ CONTENT = await get("/admin/content")||{}; files=(await get("/admin/site-images")).files||[]; }
+  catch(e){ return toast("Couldn't load: "+e.message,"err"); }
+  CONTENT.images=CONTENT.images||{};
+  const slots=[["hero","Hero","~1600×1200, landscape"],["aboutPortrait","About portrait","~1000×1400, portrait"],["journey","Journey","~1000×1400, portrait"],["ogShare","Social share (OG)","exactly 1200×630"]];
+  view.innerHTML="";
+  view.appendChild(el("div",{class:"crumbs"},[ el("a",{href:"#/",onClick:e=>{e.preventDefault();go("#/");}},["Dashboard"]), el("span",null,["/"]), el("span",null,["Site images"]) ]));
+  view.appendChild(el("h1",null,["Site images"]));
+  view.appendChild(el("p",{class:"sub"},["To add a new option, drop the image into your Dropbox _Site/ folder; it appears here after the next sync."]));
+
+  const chosen={};
+  slots.forEach(([key,label,size])=>{
+    const cur = CONTENT.images[key] || "";
+    const sel=el("select");
+    sel.appendChild(el("option",{value:""},["— none —"]));
+    files.forEach(f=>{ const o=el("option",{value:f.key},[f.key.replace("_Site/","")]); if(f.key===cur)o.selected=true; sel.appendChild(o); });
+    const prev=el("div",{class:"preview"},[ cur?el("img",{src:fileUrl(files,cur)}):el("span",null,["No image"]) ]);
+    sel.addEventListener("change",()=>{ chosen[key]=sel.value; prev.innerHTML=""; if(sel.value) prev.appendChild(el("img",{src:fileUrl(files,sel.value)})); else prev.appendChild(el("span",null,["No image"])); setDirty(true); });
+    chosen[key]=cur;
+    view.appendChild(el("div",{class:"slot"},[ prev, el("div",null,[ el("h2",null,[label]), el("p",{class:"muted"},["Recommended: "+size]), field("Choose file from _Site/",sel) ]) ]));
+  });
+  function fileUrl(files,key){ const f=files.find(x=>x.key===key); return f?f.url:""; }
+
+  const saveBtn=el("button",{class:"btn solid",onClick:save},["Save image choices"]);
+  const purgeBtn=el("button",{class:"btn ghost",onClick:purge},["Refresh site images cache"]);
+  view.appendChild(el("div",{class:"toolbar"},[saveBtn,purgeBtn]));
+  async function save(){ saveBtn.disabled=true; saveBtn.textContent="Saving…";
+    const out=Object.assign({},CONTENT); out.images=Object.assign({},CONTENT.images);
+    slots.forEach(([k])=>{ if(chosen[k]) out.images[k]=chosen[k]; else delete out.images[k]; });
+    try{ await put("/admin/content",out); CONTENT=out; setDirty(false); toast("Saved — image updated on the site."); }
+    catch(e){ toast("Save failed: "+e.message,"err"); } finally{ saveBtn.disabled=false; saveBtn.textContent="Save image choices"; } }
+  async function purge(){ const urls=files.filter(f=>Object.values(chosen).includes(f.key)).map(f=>f.url);
+    try{ await post("/admin/purge",{urls:urls}); toast("Cache refresh requested."); }catch(e){ toast("Purge failed: "+e.message,"err"); } }
+}
+
+/* ---------------- gallery manager ---------------- */
+async function screenGallery(path){
+  view.innerHTML=""; view.appendChild(el("div",{class:"center"},[el("div",{class:"spin"})]));
+  let data;
+  try{ data = await get("/admin/album?path="+encodeURIComponent(path||"")); }
+  catch(e){ return toast("Couldn't load album: "+e.message,"err"); }
+  view.innerHTML="";
+  const crumbs=el("div",{class:"crumbs"});
+  crumbs.appendChild(el("a",{href:"#/",onClick:e=>{e.preventDefault();go("#/");}},["Dashboard"]));
+  crumbs.appendChild(el("span",null,["/"]));
+  crumbs.appendChild(el("a",{href:"#/gallery",onClick:e=>{e.preventDefault();go("#/gallery");}},["Gallery"]));
+  const parts=(path||"").split("/").filter(Boolean); let acc="";
+  parts.forEach(p=>{ acc+=(acc?"/":"")+p; const a="#/gallery/"+acc.split("/").map(encodeURIComponent).join("/"); crumbs.appendChild(el("span",null,["/"])); crumbs.appendChild(el("a",{href:a},[p])); });
+  view.appendChild(crumbs);
+  view.appendChild(el("h1",null,[ path? (data.album.title||parts[parts.length-1]) : "Gallery" ]));
+  view.appendChild(el("p",{class:"sub"},["To add or remove photos/videos, drop them in your Dropbox album — they appear automatically."]));
+
+  // subfolders
+  if(data.folders.length){
+    const cards=el("div",{class:"cards"});
+    data.folders.forEach(f=>cards.appendChild(el("a",{class:"card",href:"#/gallery/"+f.path.split("/").map(encodeURIComponent).join("/")},[el("h3",null,[f.name]),el("p",null,["Open album →"])])));
+    view.appendChild(el("div",{class:"panel"},[el("h2",null,["Albums"]),cards]));
+  }
+
+  if(!path && !data.items.length){ /* root with only folders */ }
+
+  // album.json metadata editor (only meaningful inside a folder)
+  if(path){
+    const a=data.album;
+    const t=input(a.title), d=textarea(a.description), ord=input(a.order!=null?a.order:"" ,{type:"number"});
+    const coverSel=el("select"); coverSel.appendChild(el("option",{value:""},["— first image —"]));
+    data.items.filter(x=>x.type==="image").forEach(x=>{ const o=el("option",{value:x.file},[x.file]); if(a.cover===x.file)o.selected=true; coverSel.appendChild(o); });
+    coverSel.addEventListener("change",()=>setDirty(true));
+
+    const items=data.items.map(x=>({file:x.file,type:x.type,url:x.url,caption:x.caption,category:x.category,hidden:x.hidden}));
+    const itemsEditor=repeatable(items,(it)=>{
+      const cap=input(it.caption),cat=input(it.category);
+      cap.addEventListener("input",()=>it.caption=cap.value); cat.addEventListener("input",()=>it.category=cat.value);
+      const hide=el("input",{type:"checkbox"}); hide.checked=!!it.hidden; hide.addEventListener("change",()=>{it.hidden=hide.checked;setDirty(true);});
+      const thumb=el("img",{class:"thumb"+(it.hidden?" hide-flag":""),src:it.url,loading:"lazy"});
+      return el("div",{class:"row tight",style:"align-items:flex-start"},[ thumb,
+        el("div",{style:"flex:1;min-width:160px"},[ field(it.type+" — caption",cap), field("Category",cat), el("label",{class:"muted"},[hide," Hidden from public gallery"]) ]) ]); },
+      null);
+    // no "add" for items (media comes from Dropbox) — hide the add button
+    const addBtn=itemsEditor.querySelector(".btn"); if(addBtn) addBtn.style.display="none";
+
+    const embeds=(a.embeds||[]).map(x=>Object.assign({},x));
+    const embedEditor=repeatable(embeds,(it)=>{ const ti=input(it.title); const prov=el("select"); ["youtube","vimeo"].forEach(p=>{const o=el("option",{value:p},[p]);if(it.provider===p)o.selected=true;prov.appendChild(o);}); prov.addEventListener("change",()=>{it.provider=prov.value;setDirty(true);}); const id=input(it.id);
+      ti.addEventListener("input",()=>it.title=ti.value); id.addEventListener("input",()=>it.id=id.value);
+      return el("div",null,[field("Title",ti),el("div",{class:"grid2"},[field("Provider",prov),field("Video ID",id)])]); }, ()=>({title:"",provider:"youtube",id:""}));
+
+    view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Album details"]),
+      field("Title",t), field("Description",d), el("div",{class:"grid2"},[field("Order (higher shows first)",ord),field("Cover image",coverSel)]) ]));
+    view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Items"]), data.items.length?itemsEditor:el("p",{class:"muted"},["No media in this folder yet."]) ]));
+    view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Featured video embeds"]), embedEditor ]));
+
+    const saveBtn=el("button",{class:"btn solid",onClick:save},["Save album"]);
+    view.appendChild(el("div",{class:"toolbar"},[saveBtn]));
+    async function save(){ saveBtn.disabled=true; saveBtn.textContent="Saving…";
+      const albumOut={};
+      if(t.value) albumOut.title=t.value;
+      if(d.value) albumOut.description=d.value;
+      if(ord.value!=="") albumOut.order=Number(ord.value);
+      if(coverSel.value) albumOut.cover=coverSel.value;
+      const itemsObj={};
+      items.forEach((it,i)=>{ const meta={}; if(it.caption)meta.caption=it.caption; if(it.category)meta.category=it.category; meta.order=i+1; if(it.hidden)meta.hidden=true; itemsObj[it.file]=meta; });
+      albumOut.items=itemsObj;
+      const eb=embeds.filter(e=>e.id); if(eb.length) albumOut.embeds=eb;
+      try{ await put("/admin/album?path="+encodeURIComponent(path), albumOut); setDirty(false); toast("Saved — gallery updates after cache refresh."); }
+      catch(e){ toast("Save failed: "+e.message,"err"); } finally{ saveBtn.disabled=false; saveBtn.textContent="Save album"; } }
+  }
+}
+
+/* ---------------- members ---------------- */
+async function screenMembers(){
+  if(ME.role!=="owner") return renderState("Owners only","Member management is restricted to owners.");
+  view.innerHTML=""; view.appendChild(el("div",{class:"center"},[el("div",{class:"spin"})]));
+  let data; try{ data=await get("/admin/members"); }catch(e){ return toast("Couldn't load members: "+e.message,"err"); }
+  const members=(data.members||[]).map(m=>Object.assign({},m));
+  view.innerHTML="";
+  view.appendChild(el("div",{class:"crumbs"},[ el("a",{href:"#/",onClick:e=>{e.preventDefault();go("#/");}},["Dashboard"]), el("span",null,["/"]), el("span",null,["Members"]) ]));
+  view.appendChild(el("h1",null,["Members"]));
+  view.appendChild(el("p",{class:"sub"},["Invite people by email. They sign in with Cloudflare Access (email one-time code). Removing someone instantly revokes access."]));
+
+  const table=el("table");
+  const thead=el("tr"); ["Name","Email","Role","Status",""].forEach(h=>thead.appendChild(el("th",null,[h]))); table.appendChild(thead);
+  function redraw(){
+    Array.from(table.querySelectorAll("tr.mrow")).forEach(r=>r.remove());
+    members.forEach((m,i)=>{
+      const tr=el("tr",{class:"mrow"});
+      const isSelf = m.email.toLowerCase()===ME.email.toLowerCase();
+      const nameI=input(m.name); nameI.addEventListener("input",()=>m.name=nameI.value);
+      tr.appendChild(el("td",null,[nameI]));
+      tr.appendChild(el("td",{class:"muted"},[m.email]));
+      const roleSel=el("select"); ["owner","editor"].forEach(r=>{const o=el("option",{value:r},[r]);if(m.role===r)o.selected=true;roleSel.appendChild(o);});
+      roleSel.disabled=isSelf; roleSel.addEventListener("change",()=>{m.role=roleSel.value;setDirty(true);});
+      tr.appendChild(el("td",null,[roleSel]));
+      const statBtn=el("button",{class:"pill"+(m.status==="active"?" active":""),onClick:()=>{ if(isSelf) return toast("You can't deactivate yourself.","err"); m.status=m.status==="active"?"inactive":"active"; setDirty(true); redraw(); }},[m.status||"active"]);
+      tr.appendChild(el("td",null,[statBtn]));
+      tr.appendChild(el("td",null,[ isSelf?el("span",{class:"muted"},["you"]):el("button",{class:"iconbtn",title:"Remove",onClick:()=>{ members.splice(i,1); setDirty(true); redraw(); }},["✕"]) ]));
+      table.appendChild(tr);
+    });
+  }
+  redraw();
+  view.appendChild(el("div",{class:"panel"},[table]));
+
+  // invite
+  const iName=input(""),iEmail=input("",{type:"email"}); const iRole=el("select"); ["editor","owner"].forEach(r=>iRole.appendChild(el("option",{value:r},[r])));
+  const inviteBtn=el("button",{class:"btn ghost",onClick:()=>{
+    const email=(iEmail.value||"").trim().toLowerCase(); if(!email||email.indexOf("@")<0) return toast("Enter a valid email.","err");
+    if(members.some(m=>m.email.toLowerCase()===email)) return toast("That email is already a member.","err");
+    members.push({email:email,name:iName.value||email,role:iRole.value,status:"active"}); iName.value="";iEmail.value=""; setDirty(true); redraw();
+  }},["Add member"]);
+  view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Invite a member"]), el("div",{class:"grid2"},[field("Name",iName),field("Email",iEmail)]), field("Role",iRole), inviteBtn ]));
+
+  const saveBtn=el("button",{class:"btn solid",onClick:save},["Save members"]);
+  view.appendChild(el("div",{class:"toolbar"},[saveBtn]));
+  async function save(){
+    if(!members.some(m=>m.role==="owner"&&m.status==="active")) return toast("Keep at least one active owner.","err");
+    saveBtn.disabled=true; saveBtn.textContent="Saving…";
+    try{ await put("/admin/members",{members:members}); setDirty(false); toast("Members saved."); }
+    catch(e){ toast("Save failed: "+e.message,"err"); } finally{ saveBtn.disabled=false; saveBtn.textContent="Save members"; }
+  }
+}
+</script>
+</body>
+</html>

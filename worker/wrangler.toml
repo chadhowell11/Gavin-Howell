@@ -7,10 +7,28 @@ compatibility_date = "2025-01-01"
 binding = "MEDIA"
 bucket_name = "gavin-media"
 
+# Static assets: serves the admin SPA (public/admin/index.html) at /admin.
+# Requests that don't match an asset fall through to the Worker (the API).
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "none"
+
 [vars]
 # Custom domain that serves the bucket bytes (CDN-cached, zero egress).
-# Do NOT use the *.r2.dev dev URL in production (rate-limited, uncached).
 MEDIA_BASE = "https://media.breakthestageboy.com"
-# Front-end origin(s) allowed to call this API (CORS). Comma-separated list —
-# both the www and apex domains are allowed. Use "*" only while developing.
+# Front-end origin(s) allowed to call the public gallery API (CORS).
 ALLOW_ORIGIN = "https://www.breakthestageboy.com,https://breakthestageboy.com"
+# This Worker's own public base (used to evict the gallery /api/list cache).
+SELF_BASE = "https://api.breakthestageboy.com"
+
+# ---- Admin panel ----
+# Cloudflare Access team name (the <team> in <team>.cloudflareaccess.com).
+# Set this to your real team name before deploying the admin panel.
+ACCESS_TEAM = "REPLACE_WITH_ACCESS_TEAM"
+# Optional: zone id for targeted CDN cache purges after admin writes.
+CF_ZONE_ID = ""
+
+# ---- Secrets (do NOT put values here — set with `wrangler secret put`) ----
+# ACCESS_AUD       Access application AUD tag (JWT audience)
+# CF_PURGE_TOKEN   scoped token for the cache-purge API (optional)

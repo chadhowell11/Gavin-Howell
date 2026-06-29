@@ -1,0 +1,45 @@
+{
+  "_comment": "REFERENCE ONLY — shows the shape of site/content.json. Do NOT upload as-is unless you want it to replace the homepage copy. Normally you create/edit this from the admin panel (Site content), and the public page falls back to its built-in copy for any field you leave unset.",
+  "hero": {
+    "eyebrow": "Pre-professional dancer · Class of 2027",
+    "tagline": "Classical line, street power — one dancer, every style.",
+    "intro": "From a first hip-hop routine at age five to the men's advanced ballet barre, Gavin moves across breaking, ballet, hip-hop, and contemporary — and he's just getting started.",
+    "tags": ["Breaking", "Hip-Hop", "Ballet", "Contemporary", "Tumbling"]
+  },
+  "about": {
+    "lede": "Versatility isn't a side note in Gavin's training — it's the whole point.",
+    "paragraphs": [
+      "Gavin has been dancing since he was five…",
+      "From there he kept widening his reach…",
+      "He's collected top awards and scholarships along the way…"
+    ],
+    "quickFacts": [
+      { "value": "12+", "label": "Years training" },
+      { "value": "5", "label": "Core disciplines" },
+      { "value": "4.0+", "label": "GPA goal" },
+      { "value": "2027", "label": "Graduating class" }
+    ]
+  },
+  "disciplines": [
+    { "name": "Breaking", "blurb": "Floorwork, freezes, and power moves." },
+    { "name": "Hip-Hop", "blurb": "Where it all began. Groove and musicality." },
+    { "name": "Ballet", "blurb": "Men's advanced. The classical backbone." },
+    { "name": "Contemporary", "blurb": "Extension, control, and real emotion." },
+    { "name": "Tumbling & Tricks", "blurb": "Advanced tumbling that powers the biggest moments." }
+  ],
+  "journey": [
+    { "year": "Age 5", "title": "First steps", "body": "A group hip-hop routine at Body Expressions." }
+  ],
+  "stats": {
+    "height": "5'11\"", "weight": "160", "hair": "Brown", "eyes": "Blue",
+    "shoe": "11", "size": "32", "chest": "38.5", "waist": "31.5", "inseam": "33"
+  },
+  "contact": { "email": "Gavinhowell13@gmail.com", "location": "Louisiana, USA" },
+  "reel": { "provider": "youtube", "id": "" },
+  "images": {
+    "hero": "_Site/hero.jpg",
+    "aboutPortrait": "_Site/about-portrait.jpg",
+    "journey": "_Site/journey.jpg",
+    "ogShare": "_Site/og.jpg"
+  }
+}

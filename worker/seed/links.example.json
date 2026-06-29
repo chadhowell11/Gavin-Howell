@@ -1,0 +1,11 @@
+{
+  "links": [
+    { "id": "ig",      "label": "Instagram", "url": "https://www.instagram.com/break_the_stage_boy/", "show": true },
+    { "id": "youtube", "label": "YouTube",   "url": "", "show": false },
+    { "id": "dropbox", "label": "Dropbox",   "url": "", "show": false }
+  ],
+  "downloads": [
+    { "id": "compcard", "label": "Comp card (PDF)", "url": "" },
+    { "id": "resume",   "label": "Résumé",          "url": "" }
+  ]
+}

@@ -1,7 +1,11 @@
-// Folder-driven gallery API (Cloudflare Worker).
-// Lists ONE folder level of the R2 bucket and returns small JSON.
+// Folder-driven gallery API + admin router (Cloudflare Worker).
+// - GET /api/list      → public gallery listing (open, CDN-cached)
+// - /admin/<resource>  → authenticated admin API (see admin.js)
+// - everything else     → static assets (the admin SPA page)
 // Media bytes are never proxied through the Worker — only URLs that point at
 // the custom domain (MEDIA_BASE) are returned, so images stay CDN-cached.
+
+import { handleAdmin } from "./admin.js";
 
 const IMAGE_EXT = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
 const VIDEO_EXT = new Set(["mp4", "mov", "webm", "m4v"]);
@@ -59,6 +63,7 @@ async function listFolder(env, prefix) {
   const folders = [];
   for (const p of res.delimitedPrefixes) {
     const name = p.slice(prefix.length).replace(/\/$/, "");
+    if (name.startsWith("_")) continue; // hide utility folders such as _Site
     const sub = await env.MEDIA.list({ prefix: p, limit: 100 });
     let cover = null,
       count = 0;
@@ -101,6 +106,7 @@ async function listFolder(env, prefix) {
     const type = VIDEO_EXT.has(e) ? "video" : IMAGE_EXT.has(e) ? "image" : null;
     if (!type) continue;
     const meta = (album.items && album.items[bn]) || {};
+    if (meta.hidden === true) continue; // admin "hide" toggle
     let poster = null;
     if (type === "video") {
       const stem = stemOf(bn);
@@ -153,62 +159,80 @@ async function listFolder(env, prefix) {
   };
 }
 
+// Resolve the CORS Access-Control-Allow-Origin for a request. ALLOW_ORIGIN may
+// be a comma-separated list (e.g. www + apex); echo back whichever made the
+// request so CORS passes for all of them.
+export function resolveOrigin(req, env) {
+  const reqOrigin = req.headers.get("Origin") || "";
+  const allowList = (env.ALLOW_ORIGIN || "*")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (allowList.includes("*")) return "*";
+  return allowList.includes(reqOrigin) ? reqOrigin : allowList[0] || "*";
+}
+
+async function handleGalleryList(req, env, ctx, url) {
+  const allowOrigin = resolveOrigin(req, env);
+  const cors = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Vary: "Origin",
+  };
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+
+  const cache = caches.default;
+  // Key the cache by resolved origin so a cached apex response is never served
+  // to a www request (which would carry the wrong CORS header).
+  const cacheUrl = new URL(url.toString());
+  cacheUrl.searchParams.set("__o", allowOrigin);
+  const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
+  const cached = await cache.match(cacheKey);
+  if (cached) return cached;
+
+  let path = (url.searchParams.get("path") || "")
+    .replace(/^\/+/, "")
+    .replace(/\.\./g, "");
+  if (path && !path.endsWith("/")) path += "/";
+
+  try {
+    const data = await listFolder(env, path);
+    const res = new Response(JSON.stringify(data), {
+      headers: {
+        ...cors,
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=300",
+      },
+    });
+    ctx.waitUntil(cache.put(cacheKey, res.clone()));
+    return res;
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "list_failed" }), {
+      status: 500,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+  }
+}
+
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
+    const p = url.pathname;
 
-    // ALLOW_ORIGIN may be a comma-separated list (e.g. www + apex). Echo back
-    // whichever allowed origin made the request so CORS passes for all of them.
-    const reqOrigin = req.headers.get("Origin") || "";
-    const allowList = (env.ALLOW_ORIGIN || "*")
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const allowOrigin = allowList.includes("*")
-      ? "*"
-      : allowList.includes(reqOrigin)
-      ? reqOrigin
-      : allowList[0] || "*";
-    const cors = {
-      "Access-Control-Allow-Origin": allowOrigin,
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      Vary: "Origin",
-    };
-    if (req.method === "OPTIONS") return new Response(null, { headers: cors });
-    if (url.pathname !== "/api/list")
-      return new Response("Not found", { status: 404, headers: cors });
-
-    const cache = caches.default;
-    // Key the cache by resolved origin so a cached apex response is never
-    // served to a www request (which would carry the wrong CORS header).
-    const cacheUrl = new URL(url.toString());
-    cacheUrl.searchParams.set("__o", allowOrigin);
-    const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
-    const cached = await cache.match(cacheKey);
-    if (cached) return cached;
-
-    let path = (url.searchParams.get("path") || "")
-      .replace(/^\/+/, "")
-      .replace(/\.\./g, "");
-    if (path && !path.endsWith("/")) path += "/";
-
-    try {
-      const data = await listFolder(env, path);
-      const res = new Response(JSON.stringify(data), {
-        headers: {
-          ...cors,
-          "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=300",
-        },
-      });
-      ctx.waitUntil(cache.put(cacheKey, res.clone()));
-      return res;
-    } catch (err) {
-      return new Response(JSON.stringify({ error: "list_failed" }), {
-        status: 500,
-        headers: { ...cors, "Content-Type": "application/json" },
-      });
+    // Admin API lives under /admin/<resource>. The bare /admin and /admin/
+    // paths are the SPA page and fall through to static assets.
+    if (p.startsWith("/admin/") && p !== "/admin/") {
+      return handleAdmin(req, env, ctx, url);
     }
+
+    // Public gallery listing (open, no auth).
+    if (p === "/api/list") {
+      return handleGalleryList(req, env, ctx, url);
+    }
+
+    // Everything else (the admin SPA page, favicon, etc.) is a static asset.
+    if (env.ASSETS) return env.ASSETS.fetch(req);
+    return new Response("Not found", { status: 404 });
   },
 };

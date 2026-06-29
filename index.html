@@ -629,5 +629,104 @@
   document.getElementById('scrim').addEventListener('click',closeM);
   addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();toggleMenu(false)}});
 </script>
+<script>
+  /* ---------- data-driven content (progressive enhancement) ----------
+     Fetches site/content.json + site/links.json from the media CDN and
+     overrides matching elements. Any field that is absent — or any failure —
+     simply leaves the hardcoded markup in place, so the page can never break. */
+  (function(){
+    var MEDIA_BASE = "https://media.breakthestageboy.com";
+    var ADMIN_URL  = "https://api.breakthestageboy.com/admin";
+
+    // Repoint the footer "Admin" button to the real admin panel.
+    var ab = document.getElementById('adminBtn');
+    if (ab) ab.addEventListener('click', function(e){ e.stopImmediatePropagation(); location.href = ADMIN_URL; }, true);
+
+    function txt(sel, val){ if(val==null) return; var el=document.querySelector(sel); if(el) el.textContent=val; }
+    function imgKey(sel, key){ if(!key) return; var el=document.querySelector(sel); if(el) el.src = MEDIA_BASE + "/" + String(key).split("/").map(encodeURIComponent).join("/"); }
+
+    function applyContent(c){
+      if(!c || typeof c!=="object") return;
+      try{
+        if(c.hero){
+          txt('.hero-copy .eyebrow', c.hero.eyebrow);
+          txt('.hero-line', c.hero.tagline);
+          txt('.hero-sub', c.hero.intro);
+          if(Array.isArray(c.hero.tags)){
+            var t=document.querySelector('.tags');
+            if(t){ t.innerHTML=""; c.hero.tags.forEach(function(tag){ var s=document.createElement('span'); s.className='tag'; s.textContent=tag; t.appendChild(s); }); }
+          }
+        }
+        if(c.about){
+          txt('#about .lede', c.about.lede);
+          if(Array.isArray(c.about.paragraphs)){
+            var ps=document.querySelectorAll('#about p.body');
+            c.about.paragraphs.forEach(function(p,i){ if(ps[i]) ps[i].textContent=p; });
+          }
+          if(Array.isArray(c.about.quickFacts)){
+            var qf=document.querySelector('#about .quickfacts');
+            if(qf){ qf.innerHTML=""; c.about.quickFacts.forEach(function(f){ var d=document.createElement('div'); d.className='qf'; var b=document.createElement('b'); b.textContent=f.value; var sm=document.createElement('small'); sm.textContent=f.label; d.appendChild(b); d.appendChild(sm); qf.appendChild(d); }); }
+          }
+        }
+        if(Array.isArray(c.disciplines)){
+          var dg=document.querySelector('.disc-grid');
+          if(dg){ dg.innerHTML=""; c.disciplines.forEach(function(d,i){ var div=document.createElement('div'); div.className='disc'; var n=document.createElement('div'); n.className='n'; n.textContent=('0'+(i+1)).slice(-2); var h=document.createElement('h3'); h.textContent=d.name; var p=document.createElement('p'); p.textContent=d.blurb; div.appendChild(n); div.appendChild(h); div.appendChild(p); dg.appendChild(div); }); }
+        }
+        if(Array.isArray(c.journey)){
+          var tl=document.querySelector('.timeline');
+          if(tl){ tl.innerHTML=""; c.journey.forEach(function(j){ var div=document.createElement('div'); div.className='tl'; var yr=document.createElement('div'); yr.className='yr'; yr.textContent=j.year; var h=document.createElement('h3'); h.textContent=j.title; var p=document.createElement('p'); p.textContent=j.body; div.appendChild(yr); div.appendChild(h); div.appendChild(p); tl.appendChild(div); }); }
+        }
+        if(c.stats){
+          var order=['height','weight','hair','eyes','shoe','size','chest','waist','inseam'];
+          var cells=document.querySelectorAll('#stats .stat b');
+          order.forEach(function(k,i){
+            var v=c.stats[k]; if(v==null||!cells[i]) return;
+            if(k==='weight'){ cells[i].innerHTML=""; cells[i].appendChild(document.createTextNode(String(v))); var u=document.createElement('span'); u.className='u'; u.textContent='lb'; cells[i].appendChild(u); }
+            else cells[i].textContent=v;
+          });
+        }
+        if(c.contact){
+          if(c.contact.email){ var m=document.querySelector('.clist a[href^="mailto:"]'); if(m){ m.href="mailto:"+c.contact.email; m.textContent=c.contact.email; } }
+          if(c.contact.location){ var loc=document.querySelector('.clist .ci span'); if(loc) loc.textContent=c.contact.location; }
+        }
+        if(c.reel && c.reel.id){
+          var watch = c.reel.provider==="vimeo" ? "https://vimeo.com/"+c.reel.id : "https://www.youtube.com/watch?v="+c.reel.id;
+          var reel=document.querySelector('a.reel'); if(reel) reel.href=watch;
+        }
+        if(c.images){
+          imgKey('.hero-frame img', c.images.hero);
+          imgKey('#about .about-media img', c.images.aboutPortrait);
+          imgKey('#journey .about-media img', c.images.journey);
+        }
+      }catch(_){ /* leave hardcoded content intact */ }
+    }
+
+    function applyLinks(l){
+      if(!l) return;
+      try{
+        var dls = (l.downloads||[]);
+        function setDownload(label, url){
+          if(!url) return;
+          document.querySelectorAll('a').forEach(function(a){
+            var t=(a.textContent||"").toLowerCase();
+            if(t.indexOf(label)>-1){ a.href=url; if(a.target!=='_blank'){ a.target='_blank'; a.rel='noopener'; } }
+          });
+        }
+        dls.forEach(function(d){
+          if(d.id==='compcard') setDownload('comp card', d.url);
+          if(d.id==='resume')   setDownload('résumé', d.url) || setDownload('resume', d.url);
+        });
+      }catch(_){ }
+    }
+
+    function load(name, cb){
+      fetch(MEDIA_BASE + "/site/" + name, { cache: "no-cache" })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(cb).catch(function(){});
+    }
+    load("content.json", applyContent);
+    load("links.json", applyLinks);
+  })();
+</script>
 </body>
 </html>

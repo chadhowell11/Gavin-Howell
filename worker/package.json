@@ -1,0 +1,14 @@
+{
+  "name": "gallery-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker that lists the gavin-media R2 bucket for the folder-driven gallery.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3"
+  }
+}

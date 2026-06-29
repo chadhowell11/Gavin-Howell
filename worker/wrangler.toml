@@ -1,0 +1,15 @@
+name = "gallery-api"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# R2 bucket binding — the listing of this bucket is the source of truth.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "gavin-media"
+
+[vars]
+# Custom domain that serves the bucket bytes (CDN-cached, zero egress).
+# Do NOT use the *.r2.dev dev URL in production (rate-limited, uncached).
+MEDIA_BASE = "https://media.breakthestageboy.com"
+# Front-end origin allowed to call this API (CORS). Use "*" only while developing.
+ALLOW_ORIGIN = "https://www.breakthestageboy.com"

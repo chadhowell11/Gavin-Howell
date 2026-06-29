@@ -1,0 +1,45 @@
+name: Sync Dropbox to R2
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # ~every 10 min (GitHub cron min ~5 min; may be delayed)
+  workflow_dispatch: {}        # manual "Run workflow" for instant sync
+
+concurrency:
+  group: dropbox-r2-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+    steps:
+      - name: Install rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Write rclone config
+        run: |
+          mkdir -p ~/.config/rclone
+          printf '%s' "${{ secrets.RCLONE_CONF }}" > ~/.config/rclone/rclone.conf
+
+      - name: Sync Dropbox -> R2
+        # `copy` is additive (never deletes). Switch to `sync` for a true mirror
+        # only after confirming this workflow is solid, ideally with R2 object
+        # versioning/lifecycle enabled as a safety net.
+        run: |
+          rclone copy "dropbox:Gavin Media" "r2:gavin-media" \
+            --fast-list --transfers=8 --checkers=16 --retries=3 -v
+
+      # Optional instant refresh: purge the Worker JSON cache so new media shows
+      # up immediately instead of waiting for the 5-min TTL. Requires the
+      # CF_API_TOKEN and CF_ZONE_ID secrets; skipped automatically if unset.
+      - name: Purge Cloudflare cache (optional)
+        if: ${{ env.CF_ZONE_ID != '' }}
+        run: |
+          curl -fsS -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' || echo "cache purge failed (non-fatal)"

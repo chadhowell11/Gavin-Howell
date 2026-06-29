@@ -156,17 +156,35 @@ async function listFolder(env, prefix) {
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
+
+    // ALLOW_ORIGIN may be a comma-separated list (e.g. www + apex). Echo back
+    // whichever allowed origin made the request so CORS passes for all of them.
+    const reqOrigin = req.headers.get("Origin") || "";
+    const allowList = (env.ALLOW_ORIGIN || "*")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const allowOrigin = allowList.includes("*")
+      ? "*"
+      : allowList.includes(reqOrigin)
+      ? reqOrigin
+      : allowList[0] || "*";
     const cors = {
-      "Access-Control-Allow-Origin": env.ALLOW_ORIGIN || "*",
+      "Access-Control-Allow-Origin": allowOrigin,
       "Access-Control-Allow-Methods": "GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
+      Vary: "Origin",
     };
     if (req.method === "OPTIONS") return new Response(null, { headers: cors });
     if (url.pathname !== "/api/list")
       return new Response("Not found", { status: 404, headers: cors });
 
     const cache = caches.default;
-    const cacheKey = new Request(url.toString(), { method: "GET" });
+    // Key the cache by resolved origin so a cached apex response is never
+    // served to a www request (which would carry the wrong CORS header).
+    const cacheUrl = new URL(url.toString());
+    cacheUrl.searchParams.set("__o", allowOrigin);
+    const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
 

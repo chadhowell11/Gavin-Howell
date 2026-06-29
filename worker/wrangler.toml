@@ -11,5 +11,6 @@ bucket_name = "gavin-media"
 # Custom domain that serves the bucket bytes (CDN-cached, zero egress).
 # Do NOT use the *.r2.dev dev URL in production (rate-limited, uncached).
 MEDIA_BASE = "https://media.breakthestageboy.com"
-# Front-end origin allowed to call this API (CORS). Use "*" only while developing.
-ALLOW_ORIGIN = "https://www.breakthestageboy.com"
+# Front-end origin(s) allowed to call this API (CORS). Comma-separated list —
+# both the www and apex domains are allowed. Use "*" only while developing.
+ALLOW_ORIGIN = "https://www.breakthestageboy.com,https://breakthestageboy.com"

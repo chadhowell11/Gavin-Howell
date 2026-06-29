@@ -29,7 +29,7 @@ jobs:
         # only after confirming this workflow is solid, ideally with R2 object
         # versioning/lifecycle enabled as a safety net.
         run: |
-          rclone copy "dropbox:Gavin Media" "r2:gavin-media" \
+          rclone copy "dropbox:Gavin Howell/Dance/BTSB-WEBSITE-GALLERY" "r2:gavin-media" \
             --fast-list --transfers=8 --checkers=16 --retries=3 -v
 
       # Optional instant refresh: purge the Worker JSON cache so new media shows

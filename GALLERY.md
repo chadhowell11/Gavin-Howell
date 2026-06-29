@@ -68,6 +68,9 @@ test any URL without editing via `gallery.html?api=<worker-url>`.
 
 ### 4. Set up the sync (Dropbox → R2)
 
+The gallery source folder in Dropbox is
+**`Gavin Howell/Dance/BTSB-WEBSITE-GALLERY`** (its subfolders become albums).
+
 Build the rclone config **locally** (`rclone config`) with two remotes — a
 `dropbox` remote and an `r2` S3 remote — then copy the whole config:
 

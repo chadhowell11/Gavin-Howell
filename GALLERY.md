@@ -40,30 +40,31 @@ Dropbox "Gavin Media/"  ──rclone (GitHub Action)──▶  R2 bucket "gavin-
 ```bash
 cd worker
 npm install
-# edit wrangler.toml: set MEDIA_BASE to your custom domain,
-# ALLOW_ORIGIN to the site origin (https://www.breakthestageboy.com)
+npx wrangler login        # opens browser; authorize once
 npx wrangler deploy
 ```
 
-Note the deployed URL (e.g. `https://gallery-api.<subdomain>.workers.dev`), or
-bind it to a route like `https://www.breakthestageboy.com/api`.
+`wrangler deploy` prints the Worker URL when it finishes — both the generated
+`https://gallery-api.<subdomain>.workers.dev` and any custom domain. You can
+also find it later in the Cloudflare dashboard under **Workers & Pages →
+gallery-api**.
+
+**Custom domain (recommended):** in the dashboard open **Workers & Pages →
+gallery-api → Settings → Domains & Routes → Add → Custom domain** and enter
+**`api.breakthestageboy.com`**. The front-end is already configured to use this
+URL, so no front-end change is needed once the domain is attached.
 
 Verify:
 ```bash
-curl "https://gallery-api.<subdomain>.workers.dev/api/list?path="
-curl "https://gallery-api.<subdomain>.workers.dev/api/list?path=2026-competition"
+curl "https://api.breakthestageboy.com/api/list?path="
+curl "https://api.breakthestageboy.com/api/list?path=2026-competition"
 ```
 
 ### 3. Point the front-end at the Worker
 
-Edit `API_BASE` near the top of the `<script>` in `gallery.html`:
-
-```js
-const API_BASE = "https://gallery-api.<subdomain>.workers.dev";
-```
-
-(While testing you can override without editing: open
-`gallery.html?api=https://gallery-api.<subdomain>.workers.dev`.)
+`API_BASE` in `gallery.html` is already set to `https://api.breakthestageboy.com`.
+If you use a different URL instead, edit it near the top of the `<script>`, or
+test any URL without editing via `gallery.html?api=<worker-url>`.
 
 ### 4. Set up the sync (Dropbox → R2)
 

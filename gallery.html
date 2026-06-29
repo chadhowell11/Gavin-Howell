@@ -232,7 +232,7 @@
    ============================================================ */
 const API_BASE = (new URLSearchParams(location.search).get("api")
   || localStorage.getItem("galleryApiBase")
-  || "https://gallery-api.example.workers.dev").replace(/\/$/, "");
+  || "https://api.breakthestageboy.com").replace(/\/$/, "");
 
 const $ = (id) => document.getElementById(id);
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -428,12 +428,12 @@ function emptyState() {
 function renderError(err) {
   els.crumbs.innerHTML = ""; els.filters.innerHTML = ""; els.desc.hidden = true;
   els.title.textContent = "Gallery";
-  const unconfigured = API_BASE.includes("example.workers.dev");
+  const placeholder = API_BASE.includes("example.");
   const d = document.createElement("div"); d.className = "state";
-  d.innerHTML = `<div class="big">${unconfigured ? "Gallery not connected yet" : "Couldn't load the gallery"}</div>
-    <p>${unconfigured
+  d.innerHTML = `<div class="big">${placeholder ? "Gallery not connected yet" : "Couldn't load the gallery"}</div>
+    <p>${placeholder
       ? "Set <code>API_BASE</code> in gallery.html (or add <code>?api=&lt;worker-url&gt;</code>) to point at the deployed Worker."
-      : "There was a problem reaching the media service. " + esc(String(err && err.message || err))}</p>`;
+      : "Couldn't reach the media service yet — the gallery API may still be deploying. " + esc(String(err && err.message || err))}</p>`;
   const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "Retry"; btn.onclick = load;
   d.appendChild(btn);
   els.view.innerHTML = ""; els.view.appendChild(d);

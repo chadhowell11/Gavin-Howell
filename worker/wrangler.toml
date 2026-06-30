@@ -25,7 +25,7 @@ SELF_BASE = "https://api.breakthestageboy.com"
 # ---- Admin panel ----
 # Cloudflare Access team name (the <team> in <team>.cloudflareaccess.com).
 # Set this to your real team name before deploying the admin panel.
-ACCESS_TEAM = "misty-king-524b"
+ACCESS_TEAM = "bts-boy"
 # Optional: zone id for targeted CDN cache purges after admin writes.
 CF_ZONE_ID = ""
 

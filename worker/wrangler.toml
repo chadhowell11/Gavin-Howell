@@ -24,11 +24,9 @@ SELF_BASE = "https://api.breakthestageboy.com"
 
 # ---- Admin panel ----
 # Cloudflare Access team name (the <team> in <team>.cloudflareaccess.com).
-# Set this to your real team name before deploying the admin panel.
 ACCESS_TEAM = "bts-boy"
-# Optional: zone id for targeted CDN cache purges after admin writes.
-CF_ZONE_ID = ""
 
 # ---- Secrets (do NOT put values here — set with `wrangler secret put`) ----
 # ACCESS_AUD       Access application AUD tag (JWT audience)
-# CF_PURGE_TOKEN   scoped token for the cache-purge API (optional)
+# CF_ZONE_ID       zone id for breakthestageboy.com (targeted cache purges)
+# CF_PURGE_TOKEN   API token with Zone → Cache Purge permission

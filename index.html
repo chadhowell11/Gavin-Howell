@@ -557,7 +557,6 @@
         <div class="field"><label for="e">Email</label><input id="e" type="email" placeholder="you@example.com"></div>
         <div class="field"><label for="m">Message</label><textarea id="m" rows="4" placeholder="How can we help?"></textarea></div>
         <button class="btn solid" type="submit">Send message</button>
-        <small style="color:var(--mist)">Demo form — wired up in the build phase.</small>
       </form>
     </div>
   </div>
@@ -682,7 +681,7 @@
         }
         if(c.contact){
           if(c.contact.email){ var m=document.querySelector('.clist a[href^="mailto:"]'); if(m){ m.href="mailto:"+c.contact.email; m.textContent=c.contact.email; } }
-          if(c.contact.location){ var loc=document.querySelector('.clist .ci span'); if(loc) loc.textContent=c.contact.location; }
+          if(c.contact.location){ var loc=document.querySelector('.clist .ci > div > span'); if(loc) loc.textContent=c.contact.location; }
         }
         if(c.reel && c.reel.id){
           var watch = c.reel.provider==="vimeo" ? "https://vimeo.com/"+c.reel.id : "https://www.youtube.com/watch?v="+c.reel.id;

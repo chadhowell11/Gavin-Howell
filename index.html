@@ -636,6 +636,7 @@
      simply leaves the hardcoded markup in place, so the page can never break. */
   (function(){
     var MEDIA_BASE = "https://media.breakthestageboy.com";
+    var API_BASE   = "https://api.breakthestageboy.com";
     var ADMIN_URL  = "https://api.breakthestageboy.com/admin";
 
     // Repoint the footer "Admin" button to the real admin panel.
@@ -719,13 +720,13 @@
       }catch(_){ }
     }
 
-    function load(name, cb){
-      fetch(MEDIA_BASE + "/site/" + name, { cache: "no-cache" })
+    function load(path, cb){
+      fetch(API_BASE + path, { cache: "no-cache" })
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(cb).catch(function(){});
     }
-    load("content.json", applyContent);
-    load("links.json", applyLinks);
+    load("/api/content", applyContent);
+    load("/api/links", applyLinks);
   })();
 </script>
 </body>

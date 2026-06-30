@@ -174,6 +174,29 @@ export function resolveOrigin(req, env) {
   return allowList.includes(reqOrigin) ? reqOrigin : allowList[0] || "*";
 }
 
+// Public read of an admin-managed JSON file (content/links) with CORS headers,
+// so the homepage on www can fetch it cross-origin (R2's media domain doesn't
+// send CORS headers, which would otherwise block the fetch).
+async function handlePublicJson(req, env, key) {
+  const allowOrigin = resolveOrigin(req, env);
+  const cors = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Vary: "Origin",
+  };
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  const obj = await env.MEDIA.get(key);
+  const body = obj ? await obj.text() : "{}";
+  return new Response(body, {
+    headers: {
+      ...cors,
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=30",
+    },
+  });
+}
+
 async function handleGalleryList(req, env, ctx, url) {
   const allowOrigin = resolveOrigin(req, env);
   const cors = {
@@ -232,6 +255,10 @@ export default {
     if (p === "/api/list") {
       return handleGalleryList(req, env, ctx, url);
     }
+
+    // Public, CORS-enabled reads of the site content/links JSON (for the homepage).
+    if (p === "/api/content") return handlePublicJson(req, env, "site/content.json");
+    if (p === "/api/links") return handlePublicJson(req, env, "site/links.json");
 
     // Everything else (the admin SPA page, favicon, etc.) is a static asset.
     if (env.ASSETS) return env.ASSETS.fetch(req);

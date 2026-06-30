@@ -462,8 +462,20 @@ function showLb() {
   if (it.type === "image") {
     const img = new Image(); img.src = it.url; img.alt = it.caption || ""; img.decoding = "async"; lbMedia.appendChild(img);
   } else if (it.type === "video") {
-    const v = document.createElement("video"); v.src = it.url; v.controls = true; v.autoplay = true; v.playsInline = true;
-    if (it.poster) v.poster = it.poster; lbMedia.appendChild(v);
+    // No autoplay: iOS blocks autoplay-with-sound and leaves the element in a
+    // "can't play" state. Native controls + a user tap is reliable everywhere.
+    const v = document.createElement("video");
+    v.src = it.url; v.controls = true; v.playsInline = true; v.preload = "metadata"; v.setAttribute("controlslist", "nodownload");
+    if (it.poster) v.poster = it.poster;
+    // Guaranteed fallback: if the element can't play it, offer the direct link.
+    v.addEventListener("error", () => {
+      lbMedia.innerHTML = "";
+      const a = document.createElement("a");
+      a.className = "btn solid"; a.href = it.url; a.target = "_blank"; a.rel = "noopener";
+      a.textContent = "Open video ↗";
+      lbMedia.appendChild(a);
+    });
+    lbMedia.appendChild(v);
   } else if (it.type === "embed") {
     const em = it.embed;
     const src = em.provider === "vimeo"

@@ -57,9 +57,13 @@ jobs:
             [ "$has_thumb" = "1" ] && { echo "skip (has thumbnail): $vid"; continue; }
             enc=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$vid")
             echo "generating thumbnail: $vid"
-            if ffmpeg -hide_banner -loglevel error -ss 1 -i "$MEDIA_BASE/$enc" \
-                 -frames:v 1 -vf "thumbnail,scale='min(1280,iw)':-2" -q:v 3 -y /tmp/thumb.jpg; then
-              rclone copyto /tmp/thumb.jpg "r2:gavin-media/$stem.jpg" || echo "upload failed: $stem.jpg"
+            # -nostdin: ffmpeg must NOT read stdin, or it consumes the loop's
+            # input list and mangles the remaining filenames.
+            if ffmpeg -nostdin -hide_banner -loglevel error -ss 1 -i "$MEDIA_BASE/$enc" \
+                 -frames:v 1 -vf "thumbnail,scale='min(1280,iw)':-2" -q:v 3 -y /tmp/thumb.jpg </dev/null; then
+              # --s3-no-check-bucket: scoped R2 token can't create/inspect buckets.
+              rclone copyto /tmp/thumb.jpg "r2:gavin-media/$stem.jpg" --s3-no-check-bucket \
+                || echo "upload failed: $stem.jpg"
             else
               echo "ffmpeg failed (skipping): $vid"
             fi

@@ -36,6 +36,23 @@ const mediaUrl = (env, key) =>
   "/" +
   key.split("/").map(encodeURIComponent).join("/");
 
+// Mirror of the gallery's heuristic: only treat a filename as a readable title
+// (otherwise leave the caption blank so junk names aren't auto-saved/shown).
+function looksLikeTitle(stem) {
+  const s = (stem || "").trim();
+  if (!s) return false;
+  if (/(^|[ _-])(img|dsc|dscf|mvi|mov|vid|pxl|gopr|dji|fullsizerender|untitled|export|final|render|seq|screenrecording|screenshot)([ _-]?\d|$)/i.test(s)) return false;
+  if (/screen[ _-]?(recording|shot)/i.test(s)) return false;
+  if (/(^|[ _-])(19|20)\d{2}([-_/. ]?\d{2}){2}([ _-]|$)/.test(s)) return false;
+  if (/\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/.test(s)) return false;
+  if (!/\s/.test(s)) return false;
+  if ((s.match(/[A-Za-z]{3,}/g) || []).length < 2) return false;
+  const digits = (s.match(/\d/g) || []).length;
+  const letters = (s.match(/[A-Za-z]/g) || []).length;
+  if (digits >= letters) return false;
+  return true;
+}
+
 function writeKeyOK(key) {
   if (key.includes("..")) return false;
   if (WRITABLE.has(key)) return true;
@@ -250,7 +267,7 @@ async function readAlbum(env, path) {
       key: o.key,
       url: mediaUrl(env, o.key),
       type,
-      caption: meta.caption || titleize(stemOf(bn)),
+      caption: meta.caption || (looksLikeTitle(stemOf(bn)) ? titleize(stemOf(bn)) : ""),
       category: meta.category || null,
       order: meta.order ?? null,
       hidden: meta.hidden === true,

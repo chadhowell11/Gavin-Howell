@@ -25,6 +25,29 @@ const mediaUrl = (env, key) =>
   "/" +
   key.split("/").map(encodeURIComponent).join("/");
 
+// Heuristic: does a filename stem look like a human-set, readable title (so we
+// show it as a caption), versus a system/camera name (IMG_1234, 240B, dates,
+// ScreenRecording…, which we hide)? Admin-set album.json captions always show.
+function looksLikeTitle(stem) {
+  const s = (stem || "").trim();
+  if (!s) return false;
+  // camera / screen-capture / generic export names
+  if (/(^|[ _-])(img|dsc|dscf|mvi|mov|vid|pxl|gopr|dji|fullsizerender|untitled|export|final|render|seq|screenrecording|screenshot)([ _-]?\d|$)/i.test(s)) return false;
+  if (/screen[ _-]?(recording|shot)/i.test(s)) return false;
+  // date stamps (2026-06-30, 05-16-2026, 20260630…)
+  if (/(^|[ _-])(19|20)\d{2}([-_/. ]?\d{2}){2}([ _-]|$)/.test(s)) return false;
+  if (/\b\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}\b/.test(s)) return false;
+  // human titles use spaces between words…
+  if (!/\s/.test(s)) return false;
+  // …with at least two real words…
+  if ((s.match(/[A-Za-z]{3,}/g) || []).length < 2) return false;
+  // …and aren't dominated by digits
+  const digits = (s.match(/\d/g) || []).length;
+  const letters = (s.match(/[A-Za-z]/g) || []).length;
+  if (digits >= letters) return false;
+  return true;
+}
+
 async function readJson(env, key) {
   const obj = await env.MEDIA.get(key);
   if (!obj) return null;
@@ -123,7 +146,7 @@ async function listFolder(env, prefix) {
       key: o.key,
       url: mediaUrl(env, o.key),
       type,
-      caption: meta.caption || titleize(stemOf(bn)),
+      caption: meta.caption || (looksLikeTitle(stemOf(bn)) ? titleize(stemOf(bn)) : null),
       category: meta.category || null,
       order: meta.order ?? null,
       poster,

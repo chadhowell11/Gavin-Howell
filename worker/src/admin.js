@@ -225,7 +225,7 @@ async function readAlbum(env, path) {
 
   const folders = res.delimitedPrefixes
     .map((p) => p.slice(prefix.length).replace(/\/$/, ""))
-    .filter((n) => !n.startsWith("_"))
+    .filter((n) => !n.startsWith("_") && !(prefix === "" && n === "site"))
     .map((n) => ({ name: n, path: (prefix + n).replace(/\/$/, "") }));
 
   const objs = res.objects;

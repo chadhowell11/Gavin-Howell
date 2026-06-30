@@ -63,7 +63,9 @@ async function listFolder(env, prefix) {
   const folders = [];
   for (const p of res.delimitedPrefixes) {
     const name = p.slice(prefix.length).replace(/\/$/, "");
-    if (name.startsWith("_")) continue; // hide utility folders such as _Site
+    // Hide utility folders: _-prefixed (e.g. _Site images) and the admin
+    // data prefix `site/` (content.json, links.json, members.json).
+    if (name.startsWith("_") || (prefix === "" && name === "site")) continue;
     const sub = await env.MEDIA.list({ prefix: p, limit: 100 });
     let cover = null,
       count = 0;

@@ -1,0 +1,119 @@
+{
+  "hero": {
+    "eyebrow": "Pre-professional dancer · Class of 2027",
+    "tagline": "Classical line, street power — one dancer, every style.",
+    "intro": "From a first hip-hop routine at age five to the men's advanced ballet barre, Gavin moves across breaking, ballet, hip-hop, and contemporary — and he's just getting to the good part.",
+    "tags": [
+      "Breaking",
+      "Hip-Hop",
+      "Ballet",
+      "Contemporary",
+      "Tumbling"
+    ]
+  },
+  "about": {
+    "lede": "Versatility isn't a side note in Gavin's training — it's the whole point.",
+    "paragraphs": [
+      "Gavin has been dancing since he was five, when he started with a group hip-hop routine at Body Expressions. He added a new style nearly every year, and after three years earned a place on the company competitive team.",
+      "From there he kept widening his reach — joining a men's advanced ballet studio for classical line and control, while continuing to climb through the competitive circuit across every style. Advanced tumbling sharpened his tricks, and one-on-one hip-hop and breaking sessions shaped the signature style he carries today.",
+      "He's collected top awards and scholarships along the way. Now, heading into his senior year, his sights are set on the next stage: a high-level collegiate dance program and a professional career — all while aiming to finish high school above a 4.0 GPA."
+    ],
+    "quickFacts": [
+      {
+        "value": "12+",
+        "label": "Years training"
+      },
+      {
+        "value": "5",
+        "label": "Core disciplines"
+      },
+      {
+        "value": "4.0+",
+        "label": "GPA goal"
+      },
+      {
+        "value": "2027",
+        "label": "Graduating class"
+      }
+    ]
+  },
+  "disciplines": [
+    {
+      "name": "Breaking",
+      "blurb": "Floorwork, freezes, and power moves. The name says it — break the stage."
+    },
+    {
+      "name": "Hip-Hop",
+      "blurb": "Where it all began. Groove and musicality, sharpened in one-on-one training."
+    },
+    {
+      "name": "Ballet",
+      "blurb": "Men's advanced. The classical backbone behind every clean line he draws."
+    },
+    {
+      "name": "Contemporary",
+      "blurb": "Extension, control, and real emotion carried through movement."
+    },
+    {
+      "name": "Tumbling & Tricks",
+      "blurb": "Advanced tumbling that powers the biggest moments on stage."
+    }
+  ],
+  "journey": [
+    {
+      "year": "Age 5",
+      "title": "First steps",
+      "body": "A group hip-hop routine at Body Expressions. The spark that started everything."
+    },
+    {
+      "year": "Ages 6–7",
+      "title": "Adding range",
+      "body": "A new style nearly every year, building a broad foundation early."
+    },
+    {
+      "year": "Age 8",
+      "title": "Company team",
+      "body": "After three years of training, earns a spot on the company competitive team."
+    },
+    {
+      "year": "Then",
+      "title": "Classical training",
+      "body": "Joins a men's advanced ballet studio — line, control, and discipline."
+    },
+    {
+      "year": "Then",
+      "title": "Power & tricks",
+      "body": "Advanced tumbling plus one-on-one hip-hop and breaking shape a signature style."
+    },
+    {
+      "year": "Throughout",
+      "title": "On the podium",
+      "body": "Top awards and scholarships across the competitive circuit. [Add specific titles & placements here]"
+    },
+    {
+      "year": "Now · Senior year",
+      "title": "The next stage",
+      "body": "Eyes on a top collegiate dance program and a professional career — while finishing high school above a 4.0 GPA."
+    }
+  ],
+  "stats": {
+    "height": "5'11\"",
+    "weight": "160",
+    "hair": "Brown",
+    "eyes": "Blue",
+    "shoe": "11",
+    "size": "32",
+    "chest": "38.5",
+    "waist": "31.5",
+    "inseam": "33"
+  },
+  "contact": {
+    "email": "Gavinhowell13@gmail.com",
+    "location": "Louisiana, USA"
+  },
+  "reel": {
+    "provider": "youtube",
+    "id": ""
+  },
+  "images": {}
+}

@@ -228,6 +228,8 @@
   .stat b{display:block;font-family:var(--disp);font-weight:700;font-size:clamp(1.7rem,4vw,2.4rem);
     color:#fff;line-height:1.05;margin-top:.2em}
   .stat b .u{font-size:.8rem;color:var(--stage);font-family:var(--body);font-weight:600;margin-left:.2em}
+  /* on web: balance the specs into two equal-width rows (--cols set by JS = ceil(visible/2)) */
+  @media(min-width:760px){#stats .stats-grid{grid-template-columns:repeat(var(--cols,5),1fr)}}
 
   /* contact */
   .contact-wrap{background:linear-gradient(160deg,var(--petrol) 0%,var(--petrol-deep) 100%)}
@@ -695,13 +697,22 @@
           if(tl){ tl.innerHTML=""; c.journey.forEach(function(j){ var div=document.createElement('div'); div.className='tl'; var yr=document.createElement('div'); yr.className='yr'; yr.textContent=j.year; var h=document.createElement('h3'); h.textContent=j.title; var p=document.createElement('p'); p.textContent=j.body; div.appendChild(yr); div.appendChild(h); div.appendChild(p); tl.appendChild(div); }); }
         }
         if(c.stats){
+          // content.json is authoritative for stats: fill present values, hide
+          // blocks whose value is blank/missing, then balance into two rows.
           var order=['height','weight','hair','eyes','shoe','size','chest','waist','inseam'];
-          var cells=document.querySelectorAll('#stats .stat b');
+          var grid=document.querySelector('#stats .stats-grid');
+          var cells=grid?grid.querySelectorAll('.stat'):[];
+          var visible=0;
           order.forEach(function(k,i){
-            var v=c.stats[k]; if(v==null||!cells[i]) return;
-            if(k==='weight'){ cells[i].innerHTML=""; cells[i].appendChild(document.createTextNode(String(v))); var u=document.createElement('span'); u.className='u'; u.textContent='lb'; cells[i].appendChild(u); }
-            else cells[i].textContent=v;
+            var cell=cells[i]; if(!cell) return;
+            var v=c.stats[k];
+            if(v==null||String(v).trim()===""){ cell.style.display="none"; return; }
+            cell.style.display=""; visible++;
+            var b=cell.querySelector('b'); if(!b) return;
+            if(k==='weight'){ b.innerHTML=""; b.appendChild(document.createTextNode(String(v))); var u=document.createElement('span'); u.className='u'; u.textContent='lb'; b.appendChild(u); }
+            else b.textContent=v;
           });
+          if(grid) grid.style.setProperty('--cols', Math.max(1, Math.ceil(visible/2)));
         }
         if(c.contact){
           if(c.contact.email){ var m=document.querySelector('.clist a[href^="mailto:"]'); if(m){ m.href="mailto:"+c.contact.email; m.textContent=c.contact.email; } }

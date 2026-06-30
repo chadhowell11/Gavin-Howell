@@ -287,6 +287,9 @@
     .hero-frame{max-width:360px}
     .hero-id{display:none}
     .two{grid-template-columns:1fr}
+    /* journey: drop the sticky portrait on mobile so the timeline doesn't overlap it */
+    #journey .two>div:first-child{position:static!important;top:auto!important}
+    #journey .about-media{max-width:100%;margin-top:1.4em}
     .about-media{max-width:460px}
     .contact-grid{grid-template-columns:1fr}
     .gallery{grid-template-columns:repeat(6,1fr)}

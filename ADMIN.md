@@ -84,8 +84,11 @@ with** (the example uses `chadhowell11@gmail.com`). Then upload it to R2:
 
 ```bash
 cd worker
-npx wrangler r2 object put gavin-media/site/members.json --file=seed/members.json
+npx wrangler r2 object put gavin-media/site/members.json --file=seed/members.json --content-type=application/json
 ```
+
+(R2 object commands target the remote bucket by default — there is no
+`--remote` flag; use `--local` only if you want the local dev store.)
 
 This bootstraps the first owner. From then on, add/remove members in the panel.
 

@@ -99,8 +99,11 @@
   @media(max-width:560px){.masonry{columns:2 150px;column-gap:10px}}
   .tile{break-inside:avoid;margin-bottom:14px;position:relative;border-radius:6px;overflow:hidden;background:#0d3038;
     cursor:pointer;display:block;width:100%;text-align:left;border:0;padding:0;min-height:120px}
-  .tile img,.tile video{width:100%;height:auto;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+  .tile img{width:100%;height:auto;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
   .tile:hover img{transform:scale(1.05)}
+  /* poster-less video tiles get a fixed-aspect placeholder so masonry never
+     collapses waiting on <video> metadata (a real problem on mobile Safari) */
+  .tile .vidph{width:100%;aspect-ratio:4/5;background:radial-gradient(90% 90% at 50% 30%,rgba(27,107,122,.45),transparent 62%),#0b1417}
   .tile .cap{position:absolute;inset:auto 0 0 0;padding:14px 14px 12px;opacity:0;transform:translateY(8px);
     transition:opacity .3s,transform .3s;background:linear-gradient(transparent,rgba(5,8,9,.85));pointer-events:none}
   .tile:hover .cap,.tile:focus-visible .cap{opacity:1;transform:none}
@@ -380,8 +383,9 @@ function tile(it, idx) {
       const img = new Image(); img.src = it.poster; img.alt = it.caption || ""; img.loading = "lazy"; img.decoding = "async";
       b.appendChild(img);
     } else {
-      const v = document.createElement("video"); v.src = it.url; v.muted = true; v.playsInline = true; v.preload = "metadata";
-      b.appendChild(v);
+      // Fixed-aspect placeholder instead of an inline <video> (whose height is
+      // unknown until metadata loads, which breaks the masonry on mobile).
+      b.appendChild(document.createElement("div")).className = "vidph";
     }
     const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = "Video"; b.appendChild(badge);
     const play = document.createElement("span"); play.className = "play";

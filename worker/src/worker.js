@@ -89,23 +89,35 @@ async function listFolder(env, prefix) {
     // Hide utility folders: _-prefixed (e.g. _Site images) and the admin
     // data prefix `site/` (content.json, links.json, members.json).
     if (name.startsWith("_") || (prefix === "" && name === "site")) continue;
-    const sub = await env.MEDIA.list({ prefix: p, limit: 100 });
-    let cover = null,
-      count = 0;
+    const sub = await env.MEDIA.list({ prefix: p, limit: 1000 });
+    // Stems of videos in this folder, so a video's poster image isn't counted
+    // as a separate photo.
+    const vidStems = new Set();
     for (const o of sub.objects) {
-      const e = extOf(o.key);
-      if (IMAGE_EXT.has(e)) {
-        count++;
-        if (!cover) cover = o.key;
-      } else if (VIDEO_EXT.has(e)) {
-        count++;
+      if (VIDEO_EXT.has(extOf(o.key))) vidStems.add(stemOf(baseName(o.key)));
+    }
+    let cover = null,
+      images = 0,
+      videos = 0;
+    for (const o of sub.objects) {
+      const bn = baseName(o.key);
+      if (META.has(bn) || bn.startsWith("_") || bn.startsWith(".")) continue;
+      const e = extOf(bn);
+      if (VIDEO_EXT.has(e)) {
+        videos++;
+      } else if (IMAGE_EXT.has(e)) {
+        if (!cover) cover = o.key; // any image (incl. a poster) can be the cover
+        if (!vidStems.has(stemOf(bn))) images++; // but posters aren't counted
       }
     }
+    const count = images + videos;
     const subAlbum = await readJson(env, p + "album.json");
     folders.push({
       name,
       path: p.replace(/\/$/, ""),
       title: (subAlbum && subAlbum.title) || titleize(name),
+      images,
+      videos,
       cover: subAlbum && subAlbum.cover
         ? mediaUrl(env, p + subAlbum.cover)
         : cover

@@ -84,9 +84,9 @@
   .album .acover-fallback{position:absolute;inset:0;display:grid;place-items:center;color:var(--mist);
     background:radial-gradient(80% 80% at 50% 30%,rgba(27,107,122,.4),transparent),#0d3038}
   .album .acover-fallback svg{width:46px;height:46px;opacity:.6}
-  .album .ameta{position:absolute;inset:auto 0 0 0;padding:16px;background:linear-gradient(transparent,rgba(5,8,9,.88))}
-  .album .atitle{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:1.25rem;line-height:1.04;letter-spacing:.02em}
-  .album .acount{color:var(--mist);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;margin-top:.35em}
+  .album .ameta{position:absolute;inset:auto 0 0 0;padding:30px 18px 18px;background:linear-gradient(transparent,rgba(5,8,9,.55) 38%,rgba(5,8,9,.94))}
+  .album .atitle{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(1.45rem,2.4vw,1.85rem);line-height:1.02;letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+  .album .acount{color:#DCE7E8;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;margin-top:.45em;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 
   /* section label */
   .seclabel{font-family:var(--disp);font-weight:600;text-transform:uppercase;letter-spacing:.06em;
@@ -368,9 +368,17 @@ function albumCard(f) {
     a.appendChild(fb);
   }
   const meta = document.createElement("div"); meta.className = "ameta";
-  meta.innerHTML = `<div class="atitle">${esc(f.title)}</div><div class="acount">${f.count} item${f.count === 1 ? "" : "s"}</div>`;
+  meta.innerHTML = `<div class="atitle">${esc(f.title)}</div><div class="acount">${esc(albumCountLabel(f))}</div>`;
   a.appendChild(meta);
   return a;
+}
+
+function albumCountLabel(f) {
+  const parts = [];
+  if (f.images) parts.push(f.images + " photo" + (f.images === 1 ? "" : "s"));
+  if (f.videos) parts.push(f.videos + " video" + (f.videos === 1 ? "" : "s"));
+  if (!parts.length) { const n = f.count || 0; parts.push(n + " item" + (n === 1 ? "" : "s")); }
+  return parts.join(" · ");
 }
 
 function tile(it, idx) {

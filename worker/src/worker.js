@@ -209,6 +209,73 @@ export function resolveOrigin(req, env) {
   return allowList.includes(reqOrigin) ? reqOrigin : allowList[0] || "*";
 }
 
+const escapeHtml = (s) =>
+  String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Contact form -> email via Resend (shared send.ownhealth.fit domain).
+// Sends one notification to the site owner; reply_to is the visitor so the
+// owner can reply directly. No suppression/webhook needed (single recipient).
+async function handleContact(req, env) {
+  const allowOrigin = resolveOrigin(req, env);
+  const cors = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Vary: "Origin",
+  };
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  const reply = (obj, status = 200) =>
+    new Response(JSON.stringify(obj), { status, headers: { ...cors, "Content-Type": "application/json" } });
+  if (req.method !== "POST") return reply({ error: "method_not_allowed" }, 405);
+
+  let body;
+  try { body = await req.json(); } catch { return reply({ error: "invalid_json" }, 400); }
+
+  // Honeypot: real users leave it empty; bots fill it. Pretend success.
+  if ((body.company || "").trim()) return reply({ ok: true });
+
+  const name = (body.name || "").trim();
+  const email = (body.email || "").trim();
+  const message = (body.message || "").trim();
+  if (!name || !email || !message) return reply({ error: "missing_fields" }, 400);
+  if (name.length > 200 || email.length > 200 || message.length > 5000) return reply({ error: "too_long" }, 400);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply({ error: "bad_email" }, 400);
+
+  const key = env.RESEND_API_KEY;
+  if (!key) return reply({ error: "email_not_configured" }, 500); // degrade, don't crash
+
+  const to = env.CONTACT_TO || "Gavinhowell13@gmail.com";
+  const safeMsg = escapeHtml(message).replace(/\n/g, "<br>");
+  const payload = {
+    from: "Break The Stage Boy <breakthestageboy@send.ownhealth.fit>",
+    to: [to],
+    reply_to: email, // snake_case per Resend
+    subject: `New message from ${name} — breakthestageboy.com`,
+    text: `From: ${name} <${email}>\n\n${message}`,
+    html:
+      `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0b0e11;line-height:1.5">` +
+      `<p style="margin:0 0 12px"><strong>New contact form message</strong> from breakthestageboy.com</p>` +
+      `<p style="margin:0 0 4px"><strong>Name:</strong> ${escapeHtml(name)}</p>` +
+      `<p style="margin:0 0 12px"><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>` +
+      `<p style="margin:0 0 6px"><strong>Message:</strong></p>` +
+      `<div style="border-left:3px solid #45D6C9;padding:8px 14px;background:#f4f7f7">${safeMsg}</div>` +
+      `</div>`,
+    tags: [{ name: "app", value: "breakthestageboy" }],
+  };
+
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) return reply({ error: "send_failed" }, 502);
+  } catch {
+    return reply({ error: "send_failed" }, 502);
+  }
+  return reply({ ok: true });
+}
+
 // Public read of an admin-managed JSON file (content/links) with CORS headers,
 // so the homepage on www can fetch it cross-origin (R2's media domain doesn't
 // send CORS headers, which would otherwise block the fetch).
@@ -294,6 +361,9 @@ export default {
     // Public, CORS-enabled reads of the site content/links JSON (for the homepage).
     if (p === "/api/content") return handlePublicJson(req, env, "site/content.json");
     if (p === "/api/links") return handlePublicJson(req, env, "site/links.json");
+
+    // Contact form -> email (Resend).
+    if (p === "/api/contact") return handleContact(req, env);
 
     // Everything else (the admin SPA page, favicon, etc.) is a static asset.
     if (env.ASSETS) return env.ASSETS.fetch(req);

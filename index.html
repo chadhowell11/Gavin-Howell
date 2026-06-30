@@ -556,7 +556,9 @@
         <div class="field"><label for="n">Name</label><input id="n" type="text" placeholder="Your name"></div>
         <div class="field"><label for="e">Email</label><input id="e" type="email" placeholder="you@example.com"></div>
         <div class="field"><label for="m">Message</label><textarea id="m" rows="4" placeholder="How can we help?"></textarea></div>
+        <div aria-hidden="true" style="position:absolute;left:-9999px"><label>Company<input type="text" name="company" id="cf-company" tabindex="-1" autocomplete="off"></label></div>
         <button class="btn solid" type="submit">Send message</button>
+        <p id="cf-status" style="margin-top:.9em;font-size:.88rem;display:none"></p>
       </form>
     </div>
   </div>
@@ -635,6 +637,28 @@
     // Repoint the footer "Admin" button to the real admin panel.
     var ab = document.getElementById('adminBtn');
     if (ab) ab.addEventListener('click', function(e){ e.stopImmediatePropagation(); location.href = ADMIN_URL; }, true);
+
+    // Wire the "Let's Talk" contact form to the Worker -> email.
+    var cform = document.querySelector('#contact form');
+    if (cform) cform.addEventListener('submit', function(e){
+      e.preventDefault();
+      var btn = cform.querySelector('button[type=submit]');
+      var status = document.getElementById('cf-status');
+      var val = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ""; };
+      var data = { name: val('n'), email: val('e'), message: val('m'), company: val('cf-company') };
+      var say = function(msg, color){ if(status){ status.style.display='block'; status.style.color=color; status.textContent=msg; } };
+      if(!data.name || !data.email || !data.message){ say('Please fill in your name, email, and message.', '#ffb4b4'); return; }
+      if(btn){ btn.disabled = true; }
+      say('Sending…', 'var(--mist)');
+      fetch(API_BASE + '/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+        .then(function(r){ return r.json().catch(function(){return {};}).then(function(j){ return r.ok && j.ok; }); })
+        .then(function(ok){
+          if(ok){ cform.reset(); say('Thanks — your message has been sent.', 'var(--stage)'); }
+          else { say('Sorry, something went wrong. Please email Gavin directly.', '#ffb4b4'); }
+        })
+        .catch(function(){ say('Sorry, something went wrong. Please email Gavin directly.', '#ffb4b4'); })
+        .finally(function(){ if(btn){ btn.disabled = false; } });
+    });
 
     function txt(sel, val){ if(val==null) return; var el=document.querySelector(sel); if(el) el.textContent=val; }
     function imgKey(sel, key){ if(!key) return; var el=document.querySelector(sel); if(el) el.src = MEDIA_BASE + "/" + String(key).split("/").map(encodeURIComponent).join("/"); }

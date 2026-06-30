@@ -26,7 +26,11 @@ SELF_BASE = "https://api.breakthestageboy.com"
 # Cloudflare Access team name (the <team> in <team>.cloudflareaccess.com).
 ACCESS_TEAM = "bts-boy"
 
+# Where "Let's Talk" contact-form submissions are emailed.
+CONTACT_TO = "Gavinhowell13@gmail.com"
+
 # ---- Secrets (do NOT put values here — set with `wrangler secret put`) ----
 # ACCESS_AUD       Access application AUD tag (JWT audience)
 # CF_ZONE_ID       zone id for breakthestageboy.com (targeted cache purges)
 # CF_PURGE_TOKEN   API token with Zone → Cache Purge permission
+# RESEND_API_KEY   Resend send key (shared send.ownhealth.fit account) for the contact form

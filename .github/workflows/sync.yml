@@ -36,6 +36,35 @@ jobs:
           rclone copy "dropbox:Gavin Howell/Dance/BTSB-WEBSITE-GALLERY" "r2:gavin-media" \
             --fast-list --transfers=8 --checkers=16 --retries=3 -v
 
+      - name: Auto-generate video thumbnails
+        # For every video missing a same-name thumbnail image, grab a
+        # representative frame with ffmpeg and upload it as <video-stem>.jpg.
+        # The gallery already uses a same-name image as the video poster (and
+        # hides it from the grid). Manual thumbnails are never overwritten.
+        env:
+          MEDIA_BASE: "https://media.breakthestageboy.com"
+        run: |
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          rclone lsf r2:gavin-media --recursive --files-only > /tmp/all.txt || true
+          grep -iE '\.(mp4|mov|webm|m4v)$' /tmp/all.txt > /tmp/vids.txt || true
+          while IFS= read -r vid; do
+            [ -z "$vid" ] && continue
+            stem="${vid%.*}"
+            has_thumb=0
+            for ext in jpg jpeg png webp gif avif JPG JPEG PNG WEBP; do
+              if grep -Fxq "$stem.$ext" /tmp/all.txt; then has_thumb=1; break; fi
+            done
+            [ "$has_thumb" = "1" ] && { echo "skip (has thumbnail): $vid"; continue; }
+            enc=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$vid")
+            echo "generating thumbnail: $vid"
+            if ffmpeg -hide_banner -loglevel error -ss 1 -i "$MEDIA_BASE/$enc" \
+                 -frames:v 1 -vf "thumbnail,scale='min(1280,iw)':-2" -q:v 3 -y /tmp/thumb.jpg; then
+              rclone copyto /tmp/thumb.jpg "r2:gavin-media/$stem.jpg" || echo "upload failed: $stem.jpg"
+            else
+              echo "ffmpeg failed (skipping): $vid"
+            fi
+          done < /tmp/vids.txt
+
       # Optional instant refresh: purge the Worker JSON cache so new media shows
       # up immediately instead of waiting for the 5-min TTL. Requires the
       # CF_API_TOKEN and CF_ZONE_ID secrets; skipped automatically if unset.

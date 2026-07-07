@@ -108,6 +108,29 @@ They sync to R2 like everything else. `_Site/` is hidden from the public gallery
 (folders starting with `_` are skipped). Pick which file fills each slot on the
 **Site images** screen.
 
+### Managing the home-page photo grids
+
+The two home-page photo grids — **In motion & in frame** and **Curated
+highlights** — are also managed from `_Site/` on the **Site images** screen,
+below the single-image slots above.
+
+1. Drop the photos into the **`_Site`** folder in Dropbox (directly in `_Site/`,
+   not a subfolder) and wait for the next sync.
+2. On **Site images**, each grid has its own list. Click **+ Add**, choose a
+   photo from the `_Site/` dropdown, and repeat for each image. Use **↑ / ↓** to
+   set the order they appear in.
+3. **Save image choices.** Allow a few minutes for the CDN cache, or use
+   **Refresh site images cache**.
+
+Notes:
+- No cropping or fixed sizes to worry about — the grids use a masonry layout, so
+  portrait, landscape, and square photos all display in full at their natural
+  aspect ratio. Add as many images as you like.
+- A grid **hides itself** when it has no images, so an unconfigured section never
+  shows an empty box.
+- These lists are stored in `site/content.json` under `images.motion` and
+  `images.highlights` (ordered arrays of `_Site/` keys).
+
 ### 6. Test
 
 Visit **https://api.breakthestageboy.com/admin** → Cloudflare prompts you to sign

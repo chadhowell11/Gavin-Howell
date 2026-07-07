@@ -364,7 +364,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           Watch the reel
         </a>
-        <a class="btn ghost" href="#contact">Download comp card</a>
+        <a class="btn ghost" id="cta-compcard" href="#contact" style="display:none">Download comp card</a>
       </div>
     </div>
     <div class="hero-media reveal" style="--d:.3s">
@@ -750,12 +750,12 @@
         var dls = (l && l.downloads) || [];
         var byId = {};
         dls.forEach(function(d){ if(d && d.id) byId[d.id]=d; });
-        function wire(elId, d){
+        function wire(elId, d, keepText){
           var a=document.getElementById(elId); if(!a) return false;
           var url = d && d.url;
           if(url){
             a.href=url; a.target='_blank'; a.rel='noopener';
-            if(d.label) a.textContent=d.label;
+            if(d.label && !keepText) a.textContent=d.label;
             a.style.display=''; return true;
           }
           a.style.display='none'; return false;
@@ -765,6 +765,9 @@
         if(wire('dl-resume',   byId['resume']))   anyVisible=true;
         var wrap=document.getElementById('dl-wrap');
         if(wrap){ wrap.style.display = anyVisible ? '' : 'none'; if(anyVisible) wrap.classList.add('in'); }
+        // Hero "Download comp card" CTA: show only when a comp card exists;
+        // keep its label but point it straight at the PDF.
+        wire('cta-compcard', byId['compcard'], true);
       }catch(_){ }
     }
 

@@ -29,12 +29,83 @@ jobs:
           printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
 
       - name: Sync Dropbox -> R2
-        # `copy` is additive (never deletes). Switch to `sync` for a true mirror
-        # only after confirming this workflow is solid, ideally with R2 object
-        # versioning/lifecycle enabled as a safety net.
+        # `copy` is additive (never deletes) — adds and updates only. Deletions
+        # are handled by the dedicated, guarded "Prune" step below so a bad
+        # Dropbox listing can never mass-wipe the bucket the way a raw
+        # `rclone sync` mirror could.
         run: |
           rclone copy "dropbox:Gavin Howell/Dance/BTSB-WEBSITE-GALLERY" "r2:gavin-media" \
             --fast-list --transfers=8 --checkers=16 --retries=3 -v
+
+      - name: Prune media deleted from Dropbox
+        # Mirror deletions safely: remove from R2 only user MEDIA (images/videos)
+        # that no longer exist in Dropbox, so deleting a file in Dropbox removes
+        # it from the gallery. Guarantees:
+        #  - Admin data is never touched: only image/video extensions are ever
+        #    deleted, so content.json / links.json / members.json / album.json
+        #    (all .json) are inherently safe.
+        #  - A video's poster (same-name image for a video still in Dropbox) is
+        #    kept, even though the poster itself may live only in R2.
+        #  - Orphaned auto-thumbnails are removed once their video is gone.
+        #  - Safety guards: abort if the Dropbox listing is empty, and refuse to
+        #    delete more than MAX_PRUNE files in one run.
+        env:
+          MAX_PRUNE: "200"
+        run: |
+          set -euo pipefail
+          SRC="dropbox:Gavin Howell/Dance/BTSB-WEBSITE-GALLERY"
+          DST="r2:gavin-media"
+
+          rclone lsf "$SRC" --recursive --files-only | sort > /tmp/dropbox.txt
+          rclone lsf "$DST" --recursive --files-only | sort > /tmp/r2.txt
+
+          # Safety: never prune from an empty/failed source listing.
+          if [ ! -s /tmp/dropbox.txt ]; then
+            echo "Dropbox listing is empty — skipping prune (safety guard)."
+            exit 0
+          fi
+
+          # Full-path stems of videos still present in Dropbox (poster owners).
+          grep -iE '\.(mp4|mov|webm|m4v)$' /tmp/dropbox.txt \
+            | sed -E 's/\.[^.\/]+$//' | sort -u > /tmp/live_video_stems.txt || true
+
+          # R2 keys that are absent from Dropbox.
+          comm -23 /tmp/r2.txt /tmp/dropbox.txt > /tmp/r2_only.txt || true
+
+          : > /tmp/to_delete.txt
+          while IFS= read -r key; do
+            [ -z "$key" ] && continue
+            base="${key##*/}"
+            lower="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
+            case "$lower" in
+              *.mp4|*.mov|*.webm|*.m4v)
+                echo "$key" >> /tmp/to_delete.txt ;;
+              *.jpg|*.jpeg|*.png|*.webp|*.gif|*.avif)
+                # Keep an image whose stem matches a video still in Dropbox
+                # (it is that video's poster); otherwise it was deleted.
+                stem="${key%.*}"
+                if grep -Fxq "$stem" /tmp/live_video_stems.txt; then
+                  echo "keep (poster for live video): $key"
+                else
+                  echo "$key" >> /tmp/to_delete.txt
+                fi ;;
+              *)
+                : ;; # non-media (album.json, site/*, etc.) — never pruned
+            esac
+          done < /tmp/r2_only.txt
+
+          count=$(wc -l < /tmp/to_delete.txt | tr -d ' ')
+          echo "Prune candidates: $count"
+          if [ "$count" -gt "$MAX_PRUNE" ]; then
+            echo "Refusing to delete $count files (> MAX_PRUNE=$MAX_PRUNE)."
+            echo "If this is intentional, raise MAX_PRUNE and re-run."
+            exit 1
+          fi
+          while IFS= read -r key; do
+            [ -z "$key" ] && continue
+            echo "deleting: $key"
+            rclone deletefile "$DST/$key" --s3-no-check-bucket || echo "delete failed: $key"
+          done < /tmp/to_delete.txt
 
       - name: Auto-generate video thumbnails
         # For every video missing a same-name thumbnail image, grab a

@@ -399,15 +399,39 @@ async function screenImages(){
   });
   function fileUrl(files,key){ const f=files.find(x=>x.key===key); return f?f.url:""; }
 
+  // Ordered multi-image grids on the home page (managed from _Site/ files).
+  const gridsMeta=[
+    ["motion","In motion & in frame","Featured photos for the home-page gallery grid."],
+    ["highlights","Curated highlights","Photos for the Instagram-style highlights grid."],
+  ];
+  const chosenLists={};
+  gridsMeta.forEach(([key,label,desc])=>{
+    const arr = Array.isArray(CONTENT.images[key]) ? CONTENT.images[key].slice() : [];
+    chosenLists[key]=arr;
+    const makeRow=(item,i)=>{
+      const sel=el("select");
+      sel.appendChild(el("option",{value:""},["— choose from _Site/ —"]));
+      files.forEach(f=>{ const o=el("option",{value:f.key},[f.key.replace("_Site/","")]); if(f.key===item)o.selected=true; sel.appendChild(o); });
+      const thumb=el("img",{class:"thumb",src:item?fileUrl(files,item):""});
+      sel.addEventListener("change",()=>{ arr[i]=sel.value; thumb.src=sel.value?fileUrl(files,sel.value):""; setDirty(true); });
+      return el("div",{class:"row tight",style:"align-items:center"},[thumb, el("div",{style:"flex:1;min-width:160px"},[sel])]);
+    };
+    const editor=repeatable(arr, makeRow, ()=>"");
+    view.appendChild(el("div",{class:"panel"},[ el("h2",null,[label]),
+      el("p",{class:"muted"},[desc+" Use ↑/↓ to reorder; they appear in this order. Leave empty to hide that section."]), editor ]));
+  });
+
   const saveBtn=el("button",{class:"btn solid",onClick:save},["Save image choices"]);
   const purgeBtn=el("button",{class:"btn ghost",onClick:purge},["Refresh site images cache"]);
   view.appendChild(el("div",{class:"toolbar"},[saveBtn,purgeBtn]));
   async function save(){ saveBtn.disabled=true; saveBtn.textContent="Saving…";
     const out=Object.assign({},CONTENT); out.images=Object.assign({},CONTENT.images);
     slots.forEach(([k])=>{ if(chosen[k]) out.images[k]=chosen[k]; else delete out.images[k]; });
+    gridsMeta.forEach(([k])=>{ const arr=(chosenLists[k]||[]).filter(Boolean); if(arr.length) out.images[k]=arr; else delete out.images[k]; });
     try{ await put("/admin/content",out); CONTENT=out; setDirty(false); toast("Saved — image updated on the site."); }
     catch(e){ toast("Save failed: "+e.message,"err"); } finally{ saveBtn.disabled=false; saveBtn.textContent="Save image choices"; } }
-  async function purge(){ const urls=files.filter(f=>Object.values(chosen).includes(f.key)).map(f=>f.url);
+  async function purge(){ const keys=new Set(Object.values(chosen)); gridsMeta.forEach(([k])=>(chosenLists[k]||[]).forEach(v=>keys.add(v)));
+    const urls=files.filter(f=>keys.has(f.key)).map(f=>f.url);
     try{ await post("/admin/purge",{urls:urls}); toast("Cache refresh requested."); }catch(e){ toast("Purge failed: "+e.message,"err"); } }
 }
 

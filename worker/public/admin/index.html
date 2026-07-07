@@ -161,6 +161,17 @@ function field(label, control){ return el("div",{class:"field"},[el("label",null
 function input(value, attrs){ const i=el("input",attrs||{}); i.value=value==null?"":value; i.addEventListener("input",()=>setDirty(true)); return i; }
 function textarea(value){ const t=el("textarea"); t.value=value==null?"":value; t.addEventListener("input",()=>setDirty(true)); return t; }
 
+/* reel link helpers — accept a full YouTube/Vimeo URL (or bare ID), store {provider,id} */
+function reelUrl(reel){ if(!reel||!reel.id) return ""; return reel.provider==="vimeo" ? "https://vimeo.com/"+reel.id : "https://www.youtube.com/watch?v="+reel.id; }
+function parseReel(raw){
+  const s=(raw||"").trim(); if(!s) return {provider:"",id:""};
+  let m=s.match(/(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/i); if(m) return {provider:"vimeo",id:m[1]};
+  m=s.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i); if(m) return {provider:"youtube",id:m[1]};
+  if(/^\d+$/.test(s)) return {provider:"vimeo",id:s};
+  if(/^[A-Za-z0-9_-]{6,}$/.test(s)) return {provider:"youtube",id:s};
+  return {provider:"youtube",id:s};
+}
+
 /* ---------------- routing ---------------- */
 function go(hash){
   if(dirty && !confirm("You have unsaved changes. Leave this screen?")) return;
@@ -305,11 +316,11 @@ async function screenContent(){
 
   // Contact + reel
   const cEmail=input(c.contact.email), cLoc=input(c.contact.location);
-  const rProv=el("select"); ["youtube","vimeo"].forEach(p=>{const o=el("option",{value:p},[p]);if(c.reel.provider===p)o.selected=true;rProv.appendChild(o);}); rProv.addEventListener("change",()=>setDirty(true));
-  const rId=input(c.reel.id);
+  const rLink=input(reelUrl(c.reel),{placeholder:"https://www.youtube.com/watch?v=…"});
   view.appendChild(el("div",{class:"panel"},[ el("h2",null,["Contact & reel"]),
     el("div",{class:"grid2"},[field("Email",cEmail),field("Based in",cLoc)]),
-    el("div",{class:"grid2"},[field("Reel provider",rProv),field("Reel video ID",rId)]),
+    field("Featured reel video link (YouTube or Vimeo)",rLink),
+    el("p",{class:"muted"},["Paste the full link (e.g. https://www.youtube.com/watch?v=XXXX or a youtu.be link). The video plays right in the box on the homepage. Leave blank to hide the reel."]),
   ]));
 
   const saveBtn=el("button",{class:"btn solid",onClick:save},["Save all content"]);
@@ -325,7 +336,7 @@ async function screenContent(){
     out.journey=jour.filter(j=>j.year||j.title||j.body);
     out.stats={}; statKeys.forEach(([k])=>{ if(statInputs[k].value!=="") out.stats[k]=statInputs[k].value; });
     out.contact={ email:cEmail.value, location:cLoc.value };
-    out.reel={ provider:rProv.value, id:rId.value };
+    const reel=parseReel(rLink.value); out.reel = reel.id ? { provider:reel.provider, id:reel.id } : {};
     out.images = CONTENT.images || {};
     try{ await put("/admin/content", out); CONTENT=out; setDirty(false); toast("Saved — live within seconds."); }
     catch(e){ toast("Save failed: "+e.message,"err"); }

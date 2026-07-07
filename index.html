@@ -199,11 +199,12 @@
   .note svg{flex:0 0 auto;color:var(--stage)}
 
   /* reel + external */
-  .reel{aspect-ratio:16/9;border:1px solid var(--line-strong);border-radius:10px;margin-top:2.6em;
+  .reel{position:relative;overflow:hidden;aspect-ratio:16/9;border:1px solid var(--line-strong);border-radius:10px;margin-top:2.6em;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
     background:
       radial-gradient(80% 120% at 50% 0%,rgba(27,107,122,.4),transparent 60%),#0b1417;
-    text-align:center;padding:24px}
+    text-align:center;padding:24px;cursor:pointer}
+  .reel iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:inherit;display:block}
   .play{width:64px;height:64px;border-radius:50%;border:1px solid var(--stage);
     display:grid;place-items:center;color:var(--stage);transition:.25s}
   .reel:hover .play{background:var(--stage);color:var(--ink);transform:scale(1.05)}
@@ -541,9 +542,9 @@
           <div><small>Based in</small><span>Louisiana, USA</span></div>
         </div>
       </div>
-      <div class="dl reveal">
-        <a class="btn ghost" href="#">Comp card (PDF)</a>
-        <a class="btn ghost" href="#">Résumé</a>
+      <div class="dl reveal" id="dl-wrap" style="display:none">
+        <a class="btn ghost" id="dl-compcard" href="#" style="display:none">Comp card (PDF)</a>
+        <a class="btn ghost" id="dl-resume" href="#" style="display:none">Résumé</a>
       </div>
     </div>
     <div class="reveal">
@@ -712,8 +713,27 @@
           if(c.contact.location){ var loc=document.querySelector('.clist .ci > div > span'); if(loc) loc.textContent=c.contact.location; }
         }
         if(c.reel && c.reel.id){
-          var watch = c.reel.provider==="vimeo" ? "https://vimeo.com/"+c.reel.id : "https://www.youtube.com/watch?v="+c.reel.id;
-          var reel=document.querySelector('a.reel'); if(reel) reel.href=watch;
+          var provider = c.reel.provider==="vimeo" ? "vimeo" : "youtube";
+          var vid = String(c.reel.id);
+          var watch = provider==="vimeo" ? "https://vimeo.com/"+vid : "https://www.youtube.com/watch?v="+vid;
+          var reel=document.querySelector('a.reel');
+          if(reel){
+            reel.href=watch;                 // fallback: opens on YouTube/Vimeo if JS/embed fails
+            reel.setAttribute('target','_blank'); reel.setAttribute('rel','noopener');
+            reel.addEventListener('click', function(ev){
+              ev.preventDefault();
+              var embed = provider==="vimeo"
+                ? "https://player.vimeo.com/video/"+encodeURIComponent(vid)+"?autoplay=1"
+                : "https://www.youtube-nocookie.com/embed/"+encodeURIComponent(vid)+"?autoplay=1&rel=0&modestbranding=1";
+              var box=document.createElement('div'); box.className='reel is-playing';
+              var ifr=document.createElement('iframe');
+              ifr.src=embed; ifr.title='Featured reel';
+              ifr.setAttribute('allow','autoplay; fullscreen; picture-in-picture; encrypted-media');
+              ifr.setAttribute('allowfullscreen','');
+              box.appendChild(ifr);
+              reel.parentNode.replaceChild(box, reel);
+            }, { once:true });
+          }
         }
         if(c.images){
           imgKey('.hero-frame img', c.images.hero);
@@ -724,20 +744,27 @@
     }
 
     function applyLinks(l){
-      if(!l) return;
+      // Download buttons stay hidden until a URL is populated in the admin,
+      // and appear automatically once one is added.
       try{
-        var dls = (l.downloads||[]);
-        function setDownload(label, url){
-          if(!url) return;
-          document.querySelectorAll('a').forEach(function(a){
-            var t=(a.textContent||"").toLowerCase();
-            if(t.indexOf(label)>-1){ a.href=url; if(a.target!=='_blank'){ a.target='_blank'; a.rel='noopener'; } }
-          });
+        var dls = (l && l.downloads) || [];
+        var byId = {};
+        dls.forEach(function(d){ if(d && d.id) byId[d.id]=d; });
+        function wire(elId, d){
+          var a=document.getElementById(elId); if(!a) return false;
+          var url = d && d.url;
+          if(url){
+            a.href=url; a.target='_blank'; a.rel='noopener';
+            if(d.label) a.textContent=d.label;
+            a.style.display=''; return true;
+          }
+          a.style.display='none'; return false;
         }
-        dls.forEach(function(d){
-          if(d.id==='compcard') setDownload('comp card', d.url);
-          if(d.id==='resume')   setDownload('résumé', d.url) || setDownload('resume', d.url);
-        });
+        var anyVisible = false;
+        if(wire('dl-compcard', byId['compcard'])) anyVisible=true;
+        if(wire('dl-resume',   byId['resume']))   anyVisible=true;
+        var wrap=document.getElementById('dl-wrap');
+        if(wrap){ wrap.style.display = anyVisible ? '' : 'none'; if(anyVisible) wrap.classList.add('in'); }
       }catch(_){ }
     }
 

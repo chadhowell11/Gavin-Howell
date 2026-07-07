@@ -201,10 +201,14 @@
       radial-gradient(80% 120% at 50% 0%,rgba(27,107,122,.4),transparent 60%),#0b1417;
     text-align:center;padding:24px;cursor:pointer}
   .reel iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:inherit;display:block}
-  .play{width:64px;height:64px;border-radius:50%;border:1px solid var(--stage);
+  .reel-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .reel.has-poster::before{content:"";position:absolute;inset:0;z-index:1;
+    background:linear-gradient(rgba(6,10,12,.35),rgba(6,10,12,.55))}
+  .reel .play,.reel small{position:relative;z-index:2}
+  .play{width:64px;height:64px;border-radius:50%;border:1px solid var(--stage);background:rgba(6,10,12,.35);
     display:grid;place-items:center;color:var(--stage);transition:.25s}
   .reel:hover .play{background:var(--stage);color:var(--ink);transform:scale(1.05)}
-  .reel small{color:var(--mist);letter-spacing:.12em;text-transform:uppercase;font-size:.74rem}
+  .reel small{color:#E8EDEE;letter-spacing:.12em;text-transform:uppercase;font-size:.74rem;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 
   /* instagram */
   .ig-wrap{background:var(--petrol-deep)}
@@ -720,6 +724,17 @@
           if(reel){
             reel.href=watch;                 // fallback: opens on YouTube/Vimeo if JS/embed fails
             reel.setAttribute('target','_blank'); reel.setAttribute('rel','noopener');
+            // Poster: pull the video's own thumbnail so the box shows a frame
+            // behind the play button instead of an empty gradient.
+            var poster=new Image(); poster.className='reel-poster'; poster.alt=''; poster.loading='lazy'; poster.decoding='async';
+            if(provider==='vimeo'){
+              poster.src='https://vumbnail.com/'+encodeURIComponent(vid)+'.jpg';
+            } else {
+              poster.src='https://i.ytimg.com/vi/'+encodeURIComponent(vid)+'/maxresdefault.jpg';
+              poster.onerror=function(){ poster.onerror=null; poster.src='https://i.ytimg.com/vi/'+encodeURIComponent(vid)+'/hqdefault.jpg'; };
+            }
+            reel.insertBefore(poster, reel.firstChild);
+            reel.classList.add('has-poster');
             reel.addEventListener('click', function(ev){
               ev.preventDefault();
               var embed = provider==="vimeo"

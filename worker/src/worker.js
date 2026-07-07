@@ -147,12 +147,24 @@ async function listFolder(env, prefix) {
     let poster = null;
     if (type === "video") {
       const stem = stemOf(bn);
-      const sib = objs.find((x) => {
+      // Sibling images with the same stem act as the video's poster. Prefer the
+      // most recently uploaded one so a freshly added thumbnail wins over an
+      // older auto-generated one (which can sort earlier alphabetically — e.g. a
+      // stale "205.jpg" vs a newly added "205.png").
+      const sibs = objs.filter((x) => {
         const b = baseName(x.key);
         return b !== bn && stemOf(b) === stem && IMAGE_EXT.has(extOf(b));
       });
-      if (sib) poster = mediaUrl(env, sib.key);
-      else if (meta.poster) poster = mediaUrl(env, prefix + meta.poster);
+      if (sibs.length) {
+        sibs.sort((a, b) => {
+          const ta = a.uploaded ? +new Date(a.uploaded) : 0;
+          const tb = b.uploaded ? +new Date(b.uploaded) : 0;
+          return tb - ta || a.key.localeCompare(b.key);
+        });
+        poster = mediaUrl(env, sibs[0].key);
+      } else if (meta.poster) {
+        poster = mediaUrl(env, prefix + meta.poster);
+      }
     }
     items.push({
       key: o.key,

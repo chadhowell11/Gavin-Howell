@@ -29,16 +29,8 @@ ACCESS_TEAM = "bts-boy"
 # Where "Let's Talk" contact-form submissions are emailed.
 CONTACT_TO = "Gavinhowell13@gmail.com"
 
-# ---- "Sync from Dropbox now" button (admin) ----
-# The admin's Sync-now button dispatches this GitHub Actions workflow.
-GH_REPO = "chadhowell11/Gavin-Howell"
-GH_WORKFLOW = "sync.yml"
-GH_REF = "main"
-
 # ---- Secrets (do NOT put values here — set with `wrangler secret put`) ----
-# ACCESS_AUD          Access application AUD tag (JWT audience)
-# CF_ZONE_ID          zone id for breakthestageboy.com (targeted cache purges)
-# CF_PURGE_TOKEN      API token with Zone → Cache Purge permission
-# RESEND_API_KEY      Resend send key (shared send.ownhealth.fit account) for the contact form
-# GH_DISPATCH_TOKEN   fine-grained GitHub PAT (repo chadhowell11/Gavin-Howell,
-#                     Actions: Read and write) — powers the admin Sync-now button
+# ACCESS_AUD       Access application AUD tag (JWT audience)
+# CF_ZONE_ID       zone id for breakthestageboy.com (targeted cache purges)
+# CF_PURGE_TOKEN   API token with Zone → Cache Purge permission
+# RESEND_API_KEY   Resend send key (shared send.ownhealth.fit account) for the contact form

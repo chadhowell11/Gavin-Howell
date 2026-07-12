@@ -226,15 +226,9 @@ function screenDashboard(){
   cards.appendChild(card("#/gallery","Manage gallery","Edit album titles, captions, order, cover, hide items, embeds."));
   if(ME.role==="owner") cards.appendChild(card("#/members","Members","Invite people and manage roles."));
   cards.appendChild(el("a",{class:"card",href:"https://www.breakthestageboy.com",target:"_blank",rel:"noopener"},[el("h3",null,["View live site ↗"]),el("p",null,["Open the public website in a new tab."])]));
-  const syncBtn=el("button",{class:"btn ghost",onClick:syncNow},["⟳ Sync from Dropbox now"]);
-  const syncBar=el("div",{class:"toolbar"},[ syncBtn, el("span",{class:"muted"},["Pulls new, changed, and deleted media from Dropbox right away instead of waiting for the ~10-minute auto-sync."]) ]);
+  const syncBtn=el("a",{class:"btn ghost",href:"https://github.com/chadhowell11/Gavin-Howell/actions/workflows/sync.yml",target:"_blank",rel:"noopener"},["⟳ Sync from Dropbox ↗"]);
+  const syncBar=el("div",{class:"toolbar"},[ syncBtn, el("span",{class:"muted"},["Opens GitHub Actions in a new tab — click “Run workflow” there to pull new media from Dropbox now, instead of waiting for the auto-sync."]) ]);
   view.appendChild(el("div",null,[ el("h1",null,["Dashboard"]), el("p",{class:"sub"},["Welcome, "+(ME.name||ME.email)+". Pick something to edit."]), syncBar, cards ]));
-  async function syncNow(){
-    syncBtn.disabled=true; const orig=syncBtn.textContent; syncBtn.textContent="Starting…";
-    try{ await post("/admin/sync"); toast("Sync started — new media appears in a minute or two."); }
-    catch(e){ toast(e.status===400 ? "Sync isn't set up yet (missing GitHub token — see ADMIN.md)." : ("Couldn't start sync: "+e.message), "err"); }
-    finally{ setTimeout(()=>{ syncBtn.disabled=false; syncBtn.textContent=orig; }, 5000); }
-  }
 }
 
 /* ---------------- repeatable list editor ---------------- */

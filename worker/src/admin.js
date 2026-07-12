@@ -449,33 +449,5 @@ export async function handleAdmin(req, env, ctx, url) {
     return json({ ok: true });
   }
 
-  // POST /admin/sync — trigger the Dropbox→R2 GitHub Actions workflow now,
-  // instead of waiting for the ~10-min schedule.
-  if (req.method === "POST" && p === "/admin/sync") {
-    if (!canEdit) return json({ error: "forbidden" }, 403);
-    const token = env.GH_DISPATCH_TOKEN;
-    if (!token) return json({ error: "sync_not_configured" }, 400);
-    const repo = env.GH_REPO || "chadhowell11/Gavin-Howell";
-    const workflow = env.GH_WORKFLOW || "sync.yml";
-    const ref = env.GH_REF || "main";
-    const resp = await fetch(
-      `https://api.github.com/repos/${repo}/actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "User-Agent": "gavin-admin-sync",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ref }),
-      }
-    );
-    if (resp.status === 204) return json({ ok: true });
-    const detail = await resp.text().catch(() => "");
-    return json({ error: "dispatch_failed", status: resp.status, detail: detail.slice(0, 300) }, 502);
-  }
-
   return json({ error: "not_found" }, 404);
 }

@@ -137,6 +137,29 @@ Visit **https://api.breakthestageboy.com/admin** → Cloudflare prompts you to s
 in → you land on the dashboard with your role. Try editing a field in **Site
 content**, save, and refresh the homepage.
 
+### 7. (Optional) Enable the "Sync from Dropbox now" button
+
+The dashboard has a **⟳ Sync from Dropbox now** button that runs the
+Dropbox→R2 sync immediately instead of waiting for the ~10-minute schedule. It
+works by dispatching the `sync.yml` GitHub Actions workflow, so it needs a
+GitHub token:
+
+1. GitHub → **Settings → Developer settings → Fine-grained personal access
+   tokens → Generate new token**. Scope it to **only** the `Gavin-Howell` repo,
+   with **Repository permissions → Actions: Read and write**. Copy the token.
+2. Store it as a Worker secret and redeploy:
+   ```bash
+   cd worker
+   npx wrangler secret put GH_DISPATCH_TOKEN   # paste the token
+   npx wrangler deploy
+   ```
+
+Repo/workflow/branch are set in `wrangler.toml` (`GH_REPO`, `GH_WORKFLOW`,
+`GH_REF`) and default to `chadhowell11/Gavin-Howell` / `sync.yml` / `main`.
+Until the token is set, the button returns a "not set up yet" message and
+nothing else is affected. The button is available to owners and editors; the
+token never reaches the browser.
+
 ---
 
 ## Roles

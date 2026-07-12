@@ -38,15 +38,15 @@ jobs:
             --fast-list --transfers=8 --checkers=16 --retries=3 -v
 
       - name: Prune media deleted from Dropbox
-        # Mirror deletions safely: remove from R2 only user MEDIA (images/videos)
-        # that no longer exist in Dropbox, so deleting a file in Dropbox removes
-        # it from the gallery. Guarantees:
-        #  - Admin data is never touched: only image/video extensions are ever
-        #    deleted, so content.json / links.json / members.json / album.json
-        #    (all .json) are inherently safe.
-        #  - A video's poster (same-name image for a video still in Dropbox) is
-        #    kept, even though the poster itself may live only in R2.
-        #  - Orphaned auto-thumbnails are removed once their video is gone.
+        # Mirror deletions safely so removing a file OR a whole folder in Dropbox
+        # removes it from the gallery. Rules:
+        #  - Admin data is never touched: anything under site/ (content.json /
+        #    links.json / members.json) is skipped outright.
+        #  - Folder still in Dropbox ("live"): prune only orphaned MEDIA in it;
+        #    keep its album.json and a video's same-name poster image.
+        #  - Folder gone from Dropbox: remove EVERYTHING left under it (media,
+        #    album.json, auto-thumbnails) so the album disappears — not just its
+        #    media (a lingering album.json otherwise keeps a ghost album).
         #  - Safety guards: abort if the Dropbox listing is empty, and refuse to
         #    delete more than MAX_PRUNE files in one run.
         env:
@@ -65,6 +65,11 @@ jobs:
             exit 0
           fi
 
+          # Every folder prefix that still contains at least one Dropbox file
+          # (all ancestors), e.g. "Album/" and "Album/Sub/". Root files add none.
+          awk -F/ '{ p=""; for(i=1;i<NF;i++){ p=p $i "/"; print p } }' /tmp/dropbox.txt \
+            | sort -u > /tmp/live_folders.txt
+
           # Full-path stems of videos still present in Dropbox (poster owners).
           grep -iE '\.(mp4|mov|webm|m4v)$' /tmp/dropbox.txt \
             | sed -E 's/\.[^.\/]+$//' | sort -u > /tmp/live_video_stems.txt || true
@@ -75,6 +80,18 @@ jobs:
           : > /tmp/to_delete.txt
           while IFS= read -r key; do
             [ -z "$key" ] && continue
+            case "$key" in
+              site/*) continue ;;   # admin data — never pruned
+            esac
+            # Containing folder prefix (trailing slash); empty for root-level files.
+            dir=""
+            case "$key" in */*) dir="${key%/*}/";; esac
+            if [ -n "$dir" ] && ! grep -Fxq "$dir" /tmp/live_folders.txt; then
+              # Folder was deleted from Dropbox → remove everything left in it.
+              echo "$key" >> /tmp/to_delete.txt
+              continue
+            fi
+            # Folder is still live (or root): prune only orphaned media.
             base="${key##*/}"
             lower="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')"
             case "$lower" in
@@ -90,7 +107,7 @@ jobs:
                   echo "$key" >> /tmp/to_delete.txt
                 fi ;;
               *)
-                : ;; # non-media (album.json, site/*, etc.) — never pruned
+                : ;; # non-media in a live folder (album.json, etc.) — keep
             esac
           done < /tmp/r2_only.txt
 
